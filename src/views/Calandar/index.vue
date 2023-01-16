@@ -15,54 +15,62 @@
       </div>
     </div>
     <div class="calandar-body">
-      <MonthCalandar v-if="currMode==='month'" />
-      <WeekCalandar v-else-if="currMode==='week'" />
-      <DayCalandar v-else-if="currMode==='day'" />
+      <MonthCalendar v-if="currMode==='month'" :dateInfor="initDate" />
+      <WeekCalendar v-else-if="currMode==='week'" />
+      <DayCalendar v-else-if="currMode==='day'" />
     </div>
   </div>
 </template>
 
 <script>
-import MonthCalandar from './vues/MonthCalandar.vue'
-import WeekCalandar from './vues/WeekCalandar.vue'
-import DayCalandar from './vues/DayCalandar.vue'
+import MonthCalendar from './vues/MonthCalendar.vue'
+import WeekCalendar from './vues/WeekCalendar.vue'
+import DayCalendar from './vues/DayCalendar.vue'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Calandar',
   components: {
-    MonthCalandar,
-    WeekCalandar,
-    DayCalandar,
+    MonthCalendar,
+    WeekCalendar,
+    DayCalendar,
   },
   data() {
     return {
       initDate: null,
+      currDate: null,
       currMode: 'month',
     }
   },
   methods: {
-    updateNow() {
-      this.initDate = this.$Utils.dateUtils.extractDateInfor();
+    getNow() {
+      const tmpDate = JSON.parse(localStorage.getItem('currDate'));
+
+      if (tmpDate === null) {
+        let nowDateInfor = this.$Utils.dateUtils.extractDateInfor();
+        const lastDayInfor = this.$Utils.dateUtils.getLastDay(nowDateInfor.year, nowDateInfor.month);
+
+        nowDateInfor = { ...nowDateInfor, ...lastDayInfor }
+
+        localStorage.setItem('currDate', JSON.stringify(nowDateInfor));
+        this.initDate = nowDateInfor;
+      } else {
+        this.initDate = tmpDate;
+      }
     },
     drawCalandar() {
 
     },
     moveCalandar() {
-      console.log(this.currMode);
+      
     }
   },
   created() {
-    this.updateNow();
+    this.getNow();
   },
   mounted() {
     
   },
-  computed: {
-    getCurrMode() {
-      return this.currMode;
-    }
-  }
 }
 </script>
 

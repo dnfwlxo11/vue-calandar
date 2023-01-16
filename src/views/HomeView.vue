@@ -20,7 +20,7 @@ export default {
 .container {
     text-align: center;
     margin: 0 auto;
-    width: 1080px;
+    width: 80%;
     height: 100%;
 }
 </style>
