@@ -112,16 +112,13 @@ export default {
           } 
         }
 
-        console.log(year, month)
         this.setDate(`${year}-${month}`);
-        // this.setData();
+        this.setData();
       } 
     },
     updateData(value) {
       const updateYear = value.year;
-      console.log(this.initData, value)
       this.$set(this.initData, updateYear, { ...this.initData[updateYear], ...value.submitData })
-      this.initData
       localStorage.setItem('calendarData', JSON.stringify(this.initData));
       this.initData = JSON.parse(localStorage.getItem('calendarData'));
     },
@@ -139,8 +136,8 @@ export default {
 #calandar {
     width: 100%;
     height: 90%;
-    border: 1px solid lightgrey;
-    // box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
+    // border: 1px solid lightgrey;
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
 }
 
 .calandar-nav {

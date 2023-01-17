@@ -17,21 +17,31 @@
           {{ day.class ? day.day : null }}
         </div>
         <div v-if="data[`${day.month}-${day.day}`]" class="day-plans">
-          <div class="day-plan" v-for="(content, idx) of data[`${day.month}-${day.day}`].slice(0, 3)" :key="idx">
+          <div class="day-plan-all" v-for="(content, idx) of data[`${day.month}-${day.day}`].slice(0, 3)" 
+            :key="idx"
+            @click.stop="showSubmitModal({ ...day, ...content, idx }, true)">
             <span class="day-plan-title">{{ content.title }}</span> 
-            - <span class="day-plan-content">{{ content.title }}</span>
+            - <span class="day-plan-content">{{ content.content }}</span>
           </div>
           <div v-if="data[`${day.month}-${day.day}`].length > 3">
-            <button class="btn" @click.stop="showMoreData(`${day.month}-${day.day}`)">{{data[`${day.month}-${day.day}`].length - 3}}개 더보기</button>
+            <button class="btn" @click.stop="showMoreData(day)">
+              {{data[`${day.month}-${day.day}`].length - 3}}개 더보기
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <plan-submit-menu v-if="isSubmitModal" 
+    <plan-submit-menu 
+      v-if="isSubmitModal" 
       :modalDateInfor="targetDate" 
       @action:close="isSubmitModal=false" 
-      @action:submit="saveData" />
-    <plans-modal />
+      @create:submit="saveData"
+      @update:submit="updateData" />
+    <plans-modal 
+      v-if="isPlansShowModal"
+      :modalPlansInfor="showData"
+      @action:close="isPlansShowModal=false"
+      @update:submit="updateData" />
   </div>
 </template>
 
@@ -48,11 +58,11 @@ export default {
   props: {
     date: {
       type: Object,
-      default: () => {},
+      default: () => {return {}},
     },
     data: {
       type: Object,
-      default: () => {},
+      default: () => {return {}},
     },
   },
   data() {
@@ -72,13 +82,15 @@ export default {
       this.setCardHeight();
       this.setMonthCalendar();
     },
-    showSubmitModal(date) {
+    showSubmitModal(date, type=false) {
       if (date.class) {
         this.targetDate = {
           ...date,
           'year': this.date.year,
           'month': this.date.month,
+          type,
         }
+
         this.isSubmitModal = true;
       }
     },
@@ -101,7 +113,6 @@ export default {
           'day': null,
           'class': true,
           'date': null,
-          'plan': [],
         };
 
         if (i < this.date.firstDate || i >= this.date.lastDay + this.date.firstDate) {
@@ -119,7 +130,9 @@ export default {
       }
     },
     showMoreData(target) {
-      console.log(target)
+      const { month, day } = target;
+      this.showData = { date: target, data: this.data[`${month}-${day}`] };
+      this.isPlansShowModal = true;
     },
     saveData(value) {
       const [ year, month, day ] = value.date.split('-');
@@ -127,20 +140,35 @@ export default {
       const submitData = {};
 
       // eslint-disable-next-line no-prototype-builtins
-      this.data.hasOwnProperty(`${month}-${day}`) ? 
+      if (this.data.hasOwnProperty(`${month}-${day}`)) {
+        if (this.data[`${month}-${day}`].length === 10) return;
         submitData[`${month}-${day}`] = [ ...this.data[`${month}-${day}`], value ]
-        : submitData[`${month}-${day}`] = [value];
+      } else {
+        submitData[`${month}-${day}`] = [value];
+      }
 
       this.$emit('update:data', { year, submitData });
       this.isSubmitModal = false;
     },
+    updateData(value) {
+      const [ year, month, day ] = value.date.split('-');
+
+      const baseData = this.data[`${month}-${day}`].filter((item, idx) => idx !== value.idx);
+
+      const submitData = {};
+      submitData[`${month}-${day}`] = [ ...baseData, value ]
+
+      this.$emit('update:data', { year, submitData });
+      this.isSubmitModal = false;
+    }
   },
   watch: {
     date() {
       this.init()
     },
-    data() {
+    data(value) {
       this.init();
+      this.$set(this.showData, 'data', Object.values(value)[0]); 
     }
   }
 }
@@ -176,10 +204,6 @@ export default {
     width: calc(((100% - 7px) / 7));
     border-right: 1px solid lightgrey;
     border-bottom: 1px solid lightgrey;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow-y: auto;
-    overflow-x: hidden;
 
     &::-webkit-scrollbar {
       display: none;
@@ -190,26 +214,32 @@ export default {
     }
 
     & .day-plans {
-
       & .day-plan {
-        text-align: left;
-        // 양쪽 3px 씩
-        width: calc(100% - 6px);
-        padding: 3px;
-        margin: 0 0 4px 0;
-        background: #EEDDFF;
-        color: black;
-        font-weight: 600;
-        border-radius: 0.25rem;
 
-        & .day-plan-title {
-          font-size: 16px;
+        &-all {
+          text-align: left;
+          // 양쪽 3px 씩
+          width: calc(100% - 6px);
+          padding: 3px;
+          margin: 0 0 4px 0;
+          background: #EEDDFF;
+          color: black;
           font-weight: 600;
-        }
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow-x: hidden;
+          overflow-y: auto;
+          border-radius: 0.25rem;
 
-        & .day-plan-content {
-          font-size: 14px;
-          font-weight: 400;
+          & .day-plan-title {
+            font-size: 16px;
+            font-weight: 600;
+          }
+
+          & .day-plan-content {
+            font-size: 14px;
+            font-weight: 400;
+          }
         }
       }
     }

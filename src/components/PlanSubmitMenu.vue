@@ -3,7 +3,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="header-left"></div>
-        일정 등록
+        {{modalType ? '일정 수정' : '일정 등록' }}
         <div class="mdi mdi-close header-right" @click="$emit('action:close')"></div>
       </div>
       <div class="modal-body">
@@ -42,12 +42,11 @@ export default {
       modalDateInfor: {
         type: Object,
         default: () => {return {}},
-      }
+      },
     },
     data() {
       return {
-        targetDate: null,
-        targetTime: '08:00:00',
+        modalType: false,
         isFullDay: true,
         submitData: {
           'title': null,
@@ -57,9 +56,8 @@ export default {
         }
       }
     },
-    mounted() {      
+    created() {
       this.setTargetDate();
-      
     },
     methods: {
       setTargetDate() {
@@ -67,17 +65,20 @@ export default {
         const month = this.modalDateInfor.month;
         const day = this.modalDateInfor.day;
 
+        this.modalType = this.modalDateInfor.type;
         this.submitData = {
-          ...this.targetDate,
+          ...this.modalDateInfor,
           'date': `${year}-${month}-${day.toString().padStart(2, '0')}`,
           'time': this.isFullDay ? 'all' : '08:00:00',
-        }
+        };
       },
       submit() {
         if (!this.submitData.title) return;
         if (!this.submitData.content) return;
 
-        this.$emit('action:submit', this.submitData)
+        this.modalType 
+          ? this.$emit('update:submit', this.submitData)
+          : this.$emit('create:submit', this.submitData); 
       }
     },
 }
