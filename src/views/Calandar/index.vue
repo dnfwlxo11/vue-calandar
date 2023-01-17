@@ -15,9 +15,9 @@
       </div>
     </div>
     <div class="calandar-body">
-      <MonthCalendar v-if="currMode==='month'" :dateInfor="initDate" />
-      <WeekCalendar v-else-if="currMode==='week'" />
-      <DayCalendar v-else-if="currMode==='day'" />
+      <month-calendar v-if="currMode==='month'" :date="initDate" :data="initData[initDate.year]" @update:data="updateData" />
+      <week-calendar v-else-if="currMode==='week'" />
+      <day-calendar v-else-if="currMode==='day'" />
     </div>
   </div>
 </template>
@@ -38,26 +38,58 @@ export default {
   data() {
     return {
       initDate: null,
-      currDate: null,
+      initData: null,
       currMode: 'month',
     }
   },
   methods: {
     init() {
+      // date 초기설정
       const tmpDate = JSON.parse(localStorage.getItem('currDate'));
-      if (tmpDate === null) {
-        const now = new Date();
+      tmpDate === null ? this.setDate() : this.initDate = tmpDate;
 
-        let nowDateInfor = this.$Utils.dateUtils.extractDateInfor(now);
-        const lastDayInfor = this.$Utils.dateUtils.getLastDay(nowDateInfor.year, nowDateInfor.month);
+      // calendar data 초기설정
+      let tmpData = JSON.parse(localStorage.getItem('calendarData'));
 
-        nowDateInfor = { ...nowDateInfor, ...lastDayInfor }
-
-        localStorage.setItem('currDate', JSON.stringify(nowDateInfor));
-        this.initDate = nowDateInfor;
-      } else {
-        this.initDate = tmpDate;
+      if (tmpData === null) {
+        localStorage.setItem('calendarData', JSON.stringify({}));
+        tmpData = JSON.parse(localStorage.getItem('calendarData'));
       }
+
+      const targetYear = this.initDate.year;
+        
+      // eslint-disable-next-line no-prototype-builtins
+      if (!tmpData.hasOwnProperty(targetYear)) {
+        tmpData[targetYear] = {};
+        localStorage.setItem('calendarData', JSON.stringify(tmpData));
+        tmpData = JSON.parse(localStorage.getItem('calendarData'));
+      }
+
+      this.initData = tmpData;
+    },
+    setDate(date = null) {
+      const targetDate = date === null ? new Date() : new Date(date);
+
+      let nowDateInfor = this.$Utils.dateUtils.extractDateInfor(targetDate);
+      const lastDayInfor = this.$Utils.dateUtils.getLastDay(nowDateInfor.year, nowDateInfor.month);
+
+      nowDateInfor = { ...nowDateInfor, ...lastDayInfor }
+
+      localStorage.setItem('currDate', JSON.stringify(nowDateInfor));
+      this.initDate = nowDateInfor;
+    },
+    setData() {
+      let tmpData = JSON.parse(localStorage.getItem('calendarData'));
+      const targetYear = this.initDate.year;
+        
+      // eslint-disable-next-line no-prototype-builtins
+      if (!tmpData.hasOwnProperty(targetYear)) {
+        tmpData[targetYear] = {};
+        localStorage.setItem('calendarData', JSON.stringify(tmpData));
+        tmpData = JSON.parse(localStorage.getItem('calendarData'));
+      }
+
+      this.initData = tmpData;
     },
     moveCalandar(direction) {
       if (this.currMode === 'month') {
@@ -80,17 +112,19 @@ export default {
           } 
         }
 
-        const date = new Date(`${year}-${month}`)
-        let moveDate = this.$Utils.dateUtils.extractDateInfor(date)
-        const lastDayInfor = this.$Utils.dateUtils.getLastDay(year, month);
-
-        moveDate = { ...moveDate, ...lastDayInfor }
-
-        localStorage.setItem('currDate', JSON.stringify(moveDate));
-        this.initDate = JSON.parse(localStorage.getItem('currDate'));
-        this.$set(this.initDate, 'year', year)
+        console.log(year, month)
+        this.setDate(`${year}-${month}`);
+        // this.setData();
       } 
-    }
+    },
+    updateData(value) {
+      const updateYear = value.year;
+      console.log(this.initData, value)
+      this.$set(this.initData, updateYear, { ...this.initData[updateYear], ...value.submitData })
+      this.initData
+      localStorage.setItem('calendarData', JSON.stringify(this.initData));
+      this.initData = JSON.parse(localStorage.getItem('calendarData'));
+    },
   },
   created() {
     this.init();
@@ -105,7 +139,8 @@ export default {
 #calandar {
     width: 100%;
     height: 90%;
-    box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
+    border: 1px solid lightgrey;
+    // box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
 }
 
 .calandar-nav {

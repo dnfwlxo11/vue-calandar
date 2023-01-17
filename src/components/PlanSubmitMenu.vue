@@ -4,16 +4,16 @@
       <div class="modal-header">
         <div class="header-left"></div>
         일정 등록
-        <div class="mdi mdi-close header-right" @click="$emit('on-close')"></div>
+        <div class="mdi mdi-close header-right" @click="$emit('action:close')"></div>
       </div>
       <div class="modal-body">
         <div class="body-title">
           <div style="width: 24px;"></div>
-          <input class="title-input" type="text" placeholder="제목">
+          <input class="title-input" type="text" placeholder="제목" v-model="submitData.title">
         </div>
         <div class="body-date">
           <div class="mdi mdi-calendar-month-outline"></div>
-          <input style="margin-right: 10px;" type="date" :value="targetDate">
+          <input style="margin-right: 10px;" type="date" v-model="submitData.date">
           <div style="margin: auto 0 auto 0;">
             <button :class="isFullDay ? 'btn' : 'btn-outline'"
               @click="isFullDay=!isFullDay">{{isFullDay ? '종일' : '시간대'}}</button>
@@ -21,15 +21,15 @@
         </div>
         <div v-if="!isFullDay" class="body-time">
           <div class="mdi mdi-clock-time-four-outline"></div>
-          <input style="margin-right: 10px;" type="time" :value="targetTime">
+          <input style="margin-right: 10px;" type="time" v-model="submitData.time">
         </div>
         <div class="body-content">
           <div class="mdi mdi-text-long"></div>
-          <textarea cols="50" rows="8" placeholder="내용을 적어주세요."></textarea>
+          <textarea cols="50" rows="8" placeholder="내용을 적어주세요." v-model="submitData.content"></textarea>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn" @click="$emit('on-submit')">저장</button>
+        <button class="btn" @click="submit">저장</button>
       </div>
     </div>
   </div>    
@@ -41,7 +41,7 @@ export default {
     props: {
       modalDateInfor: {
         type: Object,
-        default: () => {},
+        default: () => {return {}},
       }
     },
     data() {
@@ -49,6 +49,12 @@ export default {
         targetDate: null,
         targetTime: '08:00:00',
         isFullDay: true,
+        submitData: {
+          'title': null,
+          'date': null,
+          'time': null,
+          'content': null,
+        }
       }
     },
     mounted() {      
@@ -61,8 +67,18 @@ export default {
         const month = this.modalDateInfor.month;
         const day = this.modalDateInfor.day;
 
-        this.targetDate = `${year}-${month}-${day.toString().padStart(2, '0')}`;
+        this.submitData = {
+          ...this.targetDate,
+          'date': `${year}-${month}-${day.toString().padStart(2, '0')}`,
+          'time': this.isFullDay ? 'all' : '08:00:00',
+        }
       },
+      submit() {
+        if (!this.submitData.title) return;
+        if (!this.submitData.content) return;
+
+        this.$emit('action:submit', this.submitData)
+      }
     },
 }
 </script>
@@ -206,9 +222,9 @@ export default {
   background: #413BF7;
   color: white;
   min-width: 50px;
+  min-height: 20px;
   border-radius: 0.25rem;
   border: none;
-  font-weight: 600;
 
   &:hover {
     cursor: pointer;
