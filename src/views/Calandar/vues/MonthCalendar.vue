@@ -10,17 +10,24 @@
     <div class="days">
       <div v-for="(data, idx) of days" 
         :key="idx" class="day-card"
-        :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
+        :style="dynamicHeight"
+        :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6, 'hover': data.class === 'now' }"
+        @click="showSubmitModal(data);">
         {{ data.class === 'now' ? data.day : null }}
       </div>
     </div>
-    
+    <PlanSubmitMenu v-if="isModal" :modalDateInfor="targetDate" @on-close='isModal=false;' @on-submit='isModal=false;' />
   </div>
 </template>
 
 <script>
+import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue'
+
 export default {
   name: 'MonthCalandar',
+  components: {
+    PlanSubmitMenu,
+  },
   props: {
     dateInfor: {
       type: Object,
@@ -29,18 +36,40 @@ export default {
   },
   data() {
     return {
-      days: []
+      isModal: false,
+      days: [],
+      targetDate: null,
+      dynamicHeight: 0,
     }
   },
   mounted() {
+    this.setCardHeight();
     this.setMonthCalendar();
-    
   },
   methods: {
-    setMonthCalendar() {
-      for (let i=0;i<this.dateInfor.lastDay + this.dateInfor.firstDate;i++) {
-        console.log(i)
+    showSubmitModal(date) {
+      if (date.class === 'now') {
+        this.targetDate = {
+          ...date,
+          'year': this.dateInfor.year,
+          'month': this.dateInfor.month,
+        }
+        this.isModal = true;
+      }
+    },
+    setCardHeight() {
+      const totalDay = this.dateInfor.firstDate + this.dateInfor.lastDay;
 
+      this.dynamicHeight = {
+        'height': `calc(((100% - ${Math.floor(totalDay / 7) + 2}px) / ${Math.ceil(totalDay / 7)}))`
+      };
+
+    },
+    setMonthCalendar() {
+      const totalDay = this.dateInfor.firstDate + this.dateInfor.lastDay;
+      this.days = [];
+
+      for (let i=0;i<Math.ceil(totalDay / 7) * 7;i++) {
         const cardInforType = {
           'day': null,
           'class': 'now',
@@ -48,8 +77,8 @@ export default {
           'plan': [],
         };
 
-        if (i < this.dateInfor.firstDate) {
-          cardInforType['class'] = 'before';
+        if (i < this.dateInfor.firstDate || i >= this.dateInfor.lastDay + this.dateInfor.firstDate) {
+          cardInforType['class'] = 'none';
 
           this.days.push(cardInforType);
         } else {
@@ -59,10 +88,14 @@ export default {
           this.days.push(cardInforType);
         }
       }
-
-      console.log(this.days)
     }
   },
+  watch: {
+    dateInfor() {
+      this.setCardHeight();
+      this.setMonthCalendar();
+    }
+  }
 }
 </script>
 
@@ -80,6 +113,7 @@ export default {
   & .day-of-week {
     width: calc((100% - 7px) / 7);
     border-right: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
   }
 }
 
@@ -90,15 +124,14 @@ export default {
   flex-wrap: wrap;
 
   & .day-card {
-    height: calc(((100% - 4px) / 5));
     width: calc(((100% - 7px) / 7));
     border-right: 1px solid lightgrey;
     border-bottom: 1px solid lightgrey;
+  }
 
-    &:hover {
-      cursor: pointer;
-      background: lightgrey;
-    }
+  & .hover:hover {
+    cursor: pointer;
+    background: lightgrey;
   }
 }
 

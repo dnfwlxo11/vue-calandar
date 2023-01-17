@@ -1,14 +1,13 @@
-function extractDateInfor() {
-    const date = new Date('2022-10-02');
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+function extractDateInfor(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
     // 일 0, 월 1, 화 2, 수 3, 목 4, 금 5, 토 6
-    const day = date.getDay();
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-    const second = date.getSeconds();
-    const msecond = date.getMilliseconds();
-    const maxDay = date.getDate();
+    const day = dateObj.getDay();
+    const hour = dateObj.getHours();
+    const minute = dateObj.getMinutes();
+    const second = dateObj.getSeconds();
+    const msecond = dateObj.getMilliseconds();
+    const maxDay = dateObj.getDate();
 
     return {
         year,
@@ -23,8 +22,6 @@ function extractDateInfor() {
 }
 
 function getLastDay(year, month) {
-    console.log(year, month)
-
     const firstDay = 1;
     const lastDay = new Date(year, month, 0).getDate();
     const firstDate = new Date(`${year}-${month}-01`).getDay();

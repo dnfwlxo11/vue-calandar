@@ -2,9 +2,9 @@
   <div id="calandar">
     <div class="calandar-nav">
       <div class="date-sector">
-        <button class="mdi mdi-chevron-left" @click="moveCalandar"></button>
+        <button class="mdi mdi-chevron-left" @click="moveCalandar('prev')"></button>
         {{initDate.year}}년 {{initDate.month}}월
-        <button class="mdi mdi-chevron-right"></button>
+        <button class="mdi mdi-chevron-right" @click="moveCalandar('next')"></button>
       </div>
       <div class="menu-sector">
         <select name="calandar-menu" id="calandar-menu" v-model="currMode">
@@ -43,11 +43,12 @@ export default {
     }
   },
   methods: {
-    getNow() {
+    init() {
       const tmpDate = JSON.parse(localStorage.getItem('currDate'));
-
       if (tmpDate === null) {
-        let nowDateInfor = this.$Utils.dateUtils.extractDateInfor();
+        const now = new Date();
+
+        let nowDateInfor = this.$Utils.dateUtils.extractDateInfor(now);
         const lastDayInfor = this.$Utils.dateUtils.getLastDay(nowDateInfor.year, nowDateInfor.month);
 
         nowDateInfor = { ...nowDateInfor, ...lastDayInfor }
@@ -58,15 +59,41 @@ export default {
         this.initDate = tmpDate;
       }
     },
-    drawCalandar() {
+    moveCalandar(direction) {
+      if (this.currMode === 'month') {
+        let year = this.initDate.year;
+        let month = parseInt(this.initDate.month);
 
-    },
-    moveCalandar() {
-      
+        if (direction === 'prev') {
+          if (month === 1) {
+            year -= 1;
+            month = 12;
+          } else {
+            month -= 1;
+          }
+        } else {
+          if (month === 12) {
+            year += 1;
+            month = 1;
+          } else {
+            month += 1;
+          } 
+        }
+
+        const date = new Date(`${year}-${month}`)
+        let moveDate = this.$Utils.dateUtils.extractDateInfor(date)
+        const lastDayInfor = this.$Utils.dateUtils.getLastDay(year, month);
+
+        moveDate = { ...moveDate, ...lastDayInfor }
+
+        localStorage.setItem('currDate', JSON.stringify(moveDate));
+        this.initDate = JSON.parse(localStorage.getItem('currDate'));
+        this.$set(this.initDate, 'year', year)
+      } 
     }
   },
   created() {
-    this.getNow();
+    this.init();
   },
   mounted() {
     
@@ -78,7 +105,7 @@ export default {
 #calandar {
     width: 100%;
     height: 90%;
-    border: 1px solid black;
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
 }
 
 .calandar-nav {

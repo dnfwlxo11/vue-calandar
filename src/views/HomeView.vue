@@ -1,6 +1,5 @@
 <template>
     <div id='home' class="container">
-        <strong>베이직 캘린더</strong>
         <Calandar />
     </div>
 </template>
@@ -18,6 +17,9 @@ export default {
 
 <style>
 .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     margin: 0 auto;
     width: 80%;
