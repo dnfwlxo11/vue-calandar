@@ -11,19 +11,23 @@
       <div v-for="(day, idx) of days" 
         :key="idx" class="day-card"
         :style="dynamicHeight"
-        :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6, 'hover': day.class }"
+        :class="{ 'hover': day.class }"
         @click.stop="showSubmitModal(day)">
-        <div class="day-title">
+        <div class="day-title" :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
           {{ day.class ? day.day : null }}
         </div>
         <div v-if="monthData.data[`${day.month}-${day.day}`]" class="day-plans">
-          <div :class="`day-plan${content.time === 'all' ? '-all' : '-time' }`" v-for="(content, idx) of monthData.data[`${day.month}-${day.day}`].slice(0, 3)" 
-            :key="idx"
-            @click.stop="showSubmitModal({ ...day, ...content }, true)">
-            <span class="day-plan-title">{{ content.title }}</span> 
-            - <span class="day-plan-content">{{ content.content }}</span>
+          <div class="day-plan-wrapper">
+            <div :class="`day-plan day-plan${content.time === 'all' ? '-all' : '-time' }`" v-for="(content, idx) of monthData.data[`${day.month}-${day.day}`].slice(0, 3)" 
+              :key="idx"
+              @click.stop="showSubmitModal({ ...day, ...content }, true)">
+              <span v-if="content.time !== 'all'" class="mdi mdi-chevron-right"></span>
+              <span class="day-plan-title">{{ content.title }}</span> 
+              - <span class="day-plan-content">{{ content.content }}</span>
+            </div>
           </div>
-          <div v-if="monthData.data[`${day.month}-${day.day}`].length > 3">
+          
+          <div class="plan-more" v-if="monthData.data[`${day.month}-${day.day}`].length > 3">
             <button class="btn" @click.stop="showMoreData(day)">
               {{monthData.data[`${day.month}-${day.day}`].length - 3}}개 더보기
             </button>
@@ -175,7 +179,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #month-calandar {
   height: 100%;
 }
@@ -211,20 +215,36 @@ export default {
     }
 
     & .day-title {
-      padding: 5px 0 5px 0;
+      height: 20px;
+      padding: 0 0 5px 0;
     }
 
     & .day-plans {
-      & .day-plan {
+      // day div 25px
+      height: calc(100% - 25px);
 
-        &-all {
+      & .plan-more {
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: 30px;
+      }
+
+      & .day-plan-wrapper {
+        // more-btn 30px
+        height: calc(100% - 30px);
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        & .day-plan {
           text-align: left;
           // 양쪽 3px 씩
           width: calc(100% - 6px);
-          padding: 3px;
+          padding: 1px 3px 1px 3px;
           margin: 0 0 4px 0;
-          background: #EEDDFF;
-          color: black;
+          
           font-weight: 600;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -232,16 +252,24 @@ export default {
           overflow-y: auto;
           border-radius: 0.25rem;
 
+          &-time {
+            background: #D2FDBB;
+          }
+
+          &-all {
+            background: #EEDDFF;
+          }
+
           & .day-plan-title {
             font-size: 16px;
             font-weight: 600;
           }
-
-          & .day-plan-content {
-            font-size: 14px;
-            font-weight: 400;
-          }
         }
+      }
+
+      & .day-plan-content {
+        font-size: 14px;
+        font-weight: 400;
       }
     }
   }

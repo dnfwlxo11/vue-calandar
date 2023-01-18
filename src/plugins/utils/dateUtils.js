@@ -1,20 +1,24 @@
 function extractDateInfor(dateObj) {
     const year = dateObj.getFullYear();
     const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = (dateObj.getDate() + 1).toString().padStart(2, '0');
     // 일 0, 월 1, 화 2, 수 3, 목 4, 금 5, 토 6
 
     const firstDay = 1;
     const lastDay = new Date(year, month, 0).getDate();
     const firstDate = new Date(`${year}-${month}-01`).getDay();
     const lastDate = new Date(`${year}-${month}-${lastDay}`).getDay();
+    const nowWeek = Math.ceil(new Date(`${year}-${month}-${day}`).getDate() / 7);
 
     return {
         year,
         month,
+        day,
         firstDay,
         lastDay,
         firstDate,
         lastDate,
+        nowWeek,
     }
 }
 

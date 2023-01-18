@@ -16,7 +16,7 @@
     </div>
     <div class="calandar-body">
       <month-calendar v-if="currMode==='month'" :monthData="{ ...initDate, data: initData[initDate.year] }" @update:data="updateData" />
-      <week-calendar v-else-if="currMode==='week'" />
+      <week-calendar v-else-if="currMode==='week'" :weekData="{ ...initDate, data: initData[initDate.year] }" />
       <day-calendar v-else-if="currMode==='day'" />
     </div>
   </div>
@@ -39,7 +39,7 @@ export default {
     return {
       initDate: null,
       initData: null,
-      currMode: 'month',
+      currMode: 'week',
     }
   },
   methods: {
@@ -109,8 +109,6 @@ export default {
     },
     updateData(value) {
       const updateYear = value.year;
-      console.log(value)
-      console.log(this.initData)
       this.$set(this.initData, updateYear, { ...this.initData[updateYear], ...value.submitData })
 
       this.initData = this.$Utils.localDB.insertData('calendarData', this.initData);

@@ -1,5 +1,5 @@
 <template>
-  <div id="plan-submit-modal">
+  <div tabindex="0" id="plan-submit-modal" ref="plan-submit-modal">
     <div class="modal">
       <div class="modal-header">
         <div class="header-left">
@@ -18,7 +18,7 @@
           <input style="margin-right: 10px;" type="date" v-model="submitData.fulldate">
           <div style="margin: auto 0 auto 0;">
             <button :class="isFullDay ? 'btn' : 'btn-outline'"
-              @click="isFullDay=!isFullDay">{{isFullDay ? '종일' : '시간대'}}</button>
+              @click="setFullDay">{{isFullDay ? '종일' : '시간대'}}</button>
           </div>
         </div>
         <div v-if="!isFullDay" class="body-time">
@@ -48,6 +48,7 @@ export default {
     },
     data() {
       return {
+        modalRef: null,
         modalType: false,
         isProcessing: false,
         isFullDay: true,
@@ -61,27 +62,37 @@ export default {
     },
     created() {
       this.setTargetDate();
-      window.addEventListener('keyup', this.keyEventListener);
+    },
+    mounted() {
+      this.modalRef = this.$refs['plan-submit-modal'];
+      this.modalRef.focus();
+      this.modalRef.addEventListener('keyup', this.keyEventListener);
     },
     methods: {
       setTargetDate() {
         const { year, month, day } = this.modalDateInfor;
 
         this.modalType = this.modalDateInfor.type;
-        this.submitData = {
-          ...this.modalDateInfor,
-          'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
-          'time': this.isFullDay ? 'all' : '08:00:00',
-        };
 
-        if (!this.modalType) {
-          const additionalData = {
+        // true는 수정 false는 생성
+        if (this.modalType) {
+          this.modalDateInfor.time !== 'all' ? 
+            this.isFullDay = false 
+            : this.isFullDay = true;
+
+          this.submitData = {
+            ...this.modalDateInfor,
+            'updated_ts': this.$Utils.dateUtils.getNow(),
+          };
+        } else {
+          this.submitData = {
+            ...this.submitData,
+            'time': this.isFullDay ? '08:00' : 'all',
+            'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
             'created_ts': this.$Utils.dateUtils.getNow(),
             'updated_ts': this.$Utils.dateUtils.getNow(),
             'uid': this.$Utils.convenience.getUUID(),
           }
-
-          this.submitData = { ...this.submitData, ...additionalData };
         }
       },
       submit() {
@@ -92,10 +103,19 @@ export default {
           ? this.$emit('update:submit', this.submitData)
           : this.$emit('create:submit', this.submitData); 
       },
+      setFullDay() {
+        this.isFullDay = !this.isFullDay;
+
+        this.isFullDay
+          ? this.$set(this.submitData, 'time', 'all')
+          : this.$set(this.submitData, 'time', this.modalDateInfor.time === 'all' ? '08:00' : this.modalDateInfor.time);
+      },
       deleteData(uid) {
         this.$emit('delete:data', uid)
       },
       keyEventListener(evt) {
+        evt.stopPropagation();
+
         // 중복 방지
         if(this.isProcessing) return false;
         this.isProcessing = true;
@@ -118,7 +138,7 @@ export default {
       }
     },
     destroyed() {
-      window.removeEventListener('keyup', this.keyEventListener, false);
+      this.modalRef.removeEventListener('keyup', this.keyEventListener, false);
     }
 }
 </script>
@@ -140,6 +160,10 @@ export default {
 
     height: 70%;
     width: 90%;
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 
@@ -195,7 +219,6 @@ export default {
       margin-bottom: 40px;
 
       & .title-input {
-        
         padding: 7px;
         width: 80%;
         font-size: 18px;

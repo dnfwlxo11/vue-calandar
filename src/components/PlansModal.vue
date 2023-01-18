@@ -1,5 +1,5 @@
 <template>
-    <div id="plans-modal">
+    <div tabindex="0" id="plans-modal" ref="plans-modal">
         <div class="modal">
             <div class="modal-header">
                 <div class="header-left"></div>
@@ -12,9 +12,11 @@
                     <div class="day">{{ modalPlansInfor[0].day }}</div>
                 </div>
                 <div class="plans">
-                    <div class="plan" v-for="(plan, idx) of modalPlansInfor" 
+                    <div :class="`plan plan${ plan.time !== 'all' ? '-time' : '-all' }`" 
+                        v-for="(plan, idx) of modalPlansInfor" 
                         :key="idx"
                         @click="updateData(plan)">
+                        <span v-if="plan.time !== 'all'" class="mdi mdi-chevron-right"></span>
                         <span class="plan-title">{{ plan.title }}</span> 
                         - <span class="plan-content">{{ plan.content }}</span>
                     </div>
@@ -24,7 +26,7 @@
         <plan-submit-menu 
             v-if="isSubmitModal" 
             :modalDateInfor="targetDate"
-            @action:close="isSubmitModal=false"
+            @action:close="isSubmitModal=false;modalRef.focus()"
             @update:submit="submit"
             @delete:data="deleteData" />
     </div>
@@ -46,14 +48,17 @@ export default {
     },
     data() {
         return {
+            modalRef: null,
             isProcessing: false,
             isSubmitModal: false,
             targetDate: null,
             week: ['일', '월', '화', '수', '목', '금', '토'],
         }
     },
-    created() {
-        window.addEventListener('keyup', this.keyEventListener);
+    mounted() {
+        this.modalRef = this.$refs['plans-modal'];
+        this.modalRef.focus();
+        this.modalRef.addEventListener('keyup', this.keyEventListener);
     },
     methods: {
         updateData(plan) {
@@ -65,6 +70,8 @@ export default {
             this.isSubmitModal = false;
         },
         keyEventListener(evt) {
+            evt.stopPropagation();
+            
             // 중복 방지
             if(this.isProcessing) return false;
             this.isProcessing = true;
@@ -88,7 +95,7 @@ export default {
         },
     },
     destroyed() {
-        window.removeEventListener('keyup', this.keyEventListener, false);
+        this.modalRef.removeEventListener('keyup', this.keyEventListener, false);
     }
 }
 </script>
@@ -110,6 +117,10 @@ export default {
 
         height: 70%;
         width: 90%;
+    }
+
+    &:focus {
+        outline: none;
     }
 }
 
@@ -173,27 +184,35 @@ export default {
             margin: 0 auto 0 auto;
             text-align: left;
 
-            & .plan-title {
-                font-size: 16px;
-                font-weight: 600;
-            }
-
-            & .plan-content {
-                font-size: 14px;
-                font-weight: 400;
-            }
-
             & .plan {
                 width: calc(100% - 20px);
                 padding: 3px 10px 3px 10px;
                 margin: 0 0 4px 0;
-                background: #EEDDFF;
+                
                 font-weight: 600;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow-x: hidden;
                 overflow-y: auto;
                 border-radius: 0.25rem;
+
+                &-all {
+                    background: #EEDDFF;
+                }
+
+                &-time {
+                    background: #D2FDBB;
+                }
+
+                & .plan-title {
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+
+                & .plan-content {
+                    font-size: 14px;
+                    font-weight: 400;
+                }
             }
         }
     }
