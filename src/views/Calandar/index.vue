@@ -2,12 +2,22 @@
   <div id="calandar">
     <div class="calandar-nav">
       <div class="date-sector">
-        <button class="mdi mdi-chevron-left" @click="moveCalandar('prev')"></button>
-        {{initDate.year}}년 {{initDate.month}}월
-        <button class="mdi mdi-chevron-right" @click="moveCalandar('next')"></button>
+        <div v-if="calendarType==='month'">
+          <button class="mdi mdi-chevron-left" @click="monthControll('prev')"></button>
+          {{initDate.year}}년 {{initDate.month}}월
+          <span v-if="calendarType === 'week'">
+            <small>{{ initDate.nowWeek }}주차</small>
+          </span>
+          <button class="mdi mdi-chevron-right" @click="monthControll('next')"></button>
+        </div>
+        <div v-else-if="calendarType==='week'">
+          <button class="mdi mdi-chevron-left" @click="weekControll('prev')"></button>
+          {{initDate.year}}년 {{initDate.month}}월 <small>{{ initDate.nowWeek }}주차</small>
+          <button class="mdi mdi-chevron-right" @click="weekControll('next')"></button>
+        </div>
       </div>
       <div class="menu-sector">
-        <select name="calandar-menu" id="calandar-menu" v-model="currMode">
+        <select name="calandar-menu" id="calandar-menu" v-model="calendarType">
           <option value="month" selected>월</option>
           <option value="week">주</option>
           <option value="day">일</option>
@@ -15,9 +25,9 @@
       </div>
     </div>
     <div class="calandar-body">
-      <month-calendar v-if="currMode==='month'" :monthData="{ ...initDate, data: initData[initDate.year] }" @update:data="updateData" />
-      <week-calendar v-else-if="currMode==='week'" :weekData="{ ...initDate, data: initData[initDate.year] }" />
-      <day-calendar v-else-if="currMode==='day'" />
+      <month-calendar v-if="calendarType==='month'" :monthData="{ ...initDate, data: initData[initDate.year] }" @update:data="updateData" />
+      <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[initDate.year] }" />
+      <day-calendar v-else-if="calendarType==='day'" />
     </div>
   </div>
 </template>
@@ -39,8 +49,11 @@ export default {
     return {
       initDate: null,
       initData: null,
-      currMode: 'week',
+      calendarType: 'week',
     }
+  },
+  created() {
+    this.init();
   },
   methods: {
     init() {
@@ -65,8 +78,18 @@ export default {
       this.initData = tmpData;
     },
     setDate(date = null) {
+      // 월 관련 데이터 설정
       const targetDate = date === null ? new Date() : new Date(date);
-      const nowDateInfor = this.$Utils.dateUtils.extractDateInfor(targetDate);
+      let nowDateInfor = this.$Utils.dateUtils.extractDateInfor(targetDate);
+
+      // 주 관련 데이터 설정
+      const weekEndDay = ((nowDateInfor.nowWeek * 7) - nowDateInfor.firstDate);
+      const weekStartDay = weekEndDay - 6;
+      nowDateInfor = { 
+        ...nowDateInfor, 
+        weekStartDay: weekStartDay,
+        weekEndDay: weekEndDay, 
+      }
 
       this.initDate = this.$Utils.localDB.insertData('currDate', nowDateInfor);
     },
@@ -82,30 +105,63 @@ export default {
 
       this.initData = tmpData;
     },
-    moveCalandar(direction) {
-      if (this.currMode === 'month') {
-        let year = this.initDate.year;
-        let month = parseInt(this.initDate.month);
+    monthControll(flag) {
+      let year = this.initDate.year;
+      let month = parseInt(this.initDate.month);
+      
+      if (flag === 'prev') {
+        if (month === 1) { 
+          this.$set(this.initDate, 'year', year - 1);
+          this.$set(this.initDate, 'month', 12);
+        } 
+        else this.$set(this.initDate, 'month', (month - 1).toString().padStart(2, '0'));
 
-        if (direction === 'prev') {
-          if (month === 1) {
-            year -= 1;
-            month = 12;
-          } else {
-            month -= 1;
-          }
-        } else {
-          if (month === 12) {
-            year += 1;
-            month = 1;
-          } else {
-            month += 1;
-          } 
+        this.setDate(`${this.initDate.year}-${this.initDate.month}-01`);
+      } else {
+        if (month === 12) { 
+          this.$set(this.initDate, 'year', year + 1);
+          this.$set(this.initDate, 'month', '01');
         }
+        else this.$set(this.initDate, 'month', (month + 1).toString().padStart(2, '0'));
 
-        this.setDate(`${year}-${month}`);
-        this.setData();
-      } 
+        this.setDate(`${this.initDate.year}-${this.initDate.month}-01`);
+      }
+
+      this.setData();
+    },
+    weekControll(flag) {
+      let nowWeek = this.initDate.nowWeek;
+      let totalWeek = this.initDate.totalWeek;
+      let weekStartDay = this.initDate.weekStartDay;
+      let weekEndDay = this.initDate.weekEndDay;
+
+      if (flag === 'prev') {
+        this.$set(this.initDate, 'weekStartDay', weekStartDay - 7);
+        this.$set(this.initDate, 'weekEndDay', weekEndDay - 7);
+        this.$set(this.initDate, 'nowWeek', nowWeek - 1);
+
+        if (nowWeek === 1) {
+          this.monthControll('prev');
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.lastDay}`);
+          this.setData();
+        } else {
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
+        }
+      } else {
+        this.$set(this.initDate, 'weekStartDay', weekStartDay + 7);
+        this.$set(this.initDate, 'weekEndDay', weekEndDay + 7);
+        this.$set(this.initDate, 'nowWeek', nowWeek + 1);
+
+        if (nowWeek === totalWeek - 1) {
+          this.monthControll('next');
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-01`);
+          this.setData();
+        } else {
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
+        }
+      }
+
+      console.log(this.initData)
     },
     updateData(value) {
       const updateYear = value.year;
@@ -113,12 +169,6 @@ export default {
 
       this.initData = this.$Utils.localDB.insertData('calendarData', this.initData);
     },
-  },
-  created() {
-    this.init();
-  },
-  mounted() {
-    
   },
 }
 </script>

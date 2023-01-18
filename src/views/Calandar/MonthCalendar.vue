@@ -106,10 +106,9 @@ export default {
       };
     },
     setMonthCalendar() {
-      const totalDay = this.monthData.firstDate + this.monthData.lastDay;
       this.days = [];
 
-      for (let i=0;i<Math.ceil(totalDay / 7) * 7;i++) {
+      for (let i=0;i<this.monthData.totalWeek * 7;i++) {
         const cardInforType = {
           'year': null,
           'month': null,
