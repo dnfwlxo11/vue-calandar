@@ -8,13 +8,13 @@
             </div>
             <div class="modal-body">
                 <div class="plans-title">
-                    <div class="week" :class="{}">{{ week[modalPlansInfor.date.date] }}</div>
-                    <div class="day">{{ modalPlansInfor.date.day }}</div>
+                    <div class="week" :class="{}">{{ week[modalPlansInfor[0].date] }}</div>
+                    <div class="day">{{ modalPlansInfor[0].day }}</div>
                 </div>
                 <div class="plans">
-                    <div class="plan" v-for="(plan, idx) of modalPlansInfor.data" 
+                    <div class="plan" v-for="(plan, idx) of modalPlansInfor" 
                         :key="idx"
-                        @click="updateData(idx)">
+                        @click="updateData(plan)">
                         <span class="plan-title">{{ plan.title }}</span> 
                         - <span class="plan-content">{{ plan.content }}</span>
                     </div>
@@ -25,7 +25,8 @@
             v-if="isSubmitModal" 
             :modalDateInfor="targetDate"
             @action:close="isSubmitModal=false"
-            @update:submit="submit" />
+            @update:submit="submit"
+            @delete:data="deleteData" />
     </div>
 </template>
 
@@ -39,30 +40,55 @@ export default {
     },
     props: {
         modalPlansInfor: {
-            type: Object,
-            default: () => {return {}},
+            type: Array,
+            default: () => {return []},
         },
     },
     data() {
         return {
+            isProcessing: false,
             isSubmitModal: false,
             targetDate: null,
             week: ['일', '월', '화', '수', '목', '금', '토'],
         }
     },
     created() {
-        console.log(this.modalPlansInfor)
+        window.addEventListener('keyup', this.keyEventListener);
     },
     methods: {
-        updateData(idx) {
+        updateData(plan) {
+            this.targetDate = { ...plan, type: true };
             this.isSubmitModal = true;
-            this.targetDate = { ...this.modalPlansInfor.data[idx], ...this.modalPlansInfor.date, idx, type: true };
-            this.targetDate['date'] = `${this.targetDate['year']}-${this.targetDate['month']}-${this.targetDate['day']}`
         },
         submit(value) {
             this.$emit('update:submit', value)
             this.isSubmitModal = false;
-        }
+        },
+        keyEventListener(evt) {
+            // 중복 방지
+            if(this.isProcessing) return false;
+            this.isProcessing = true;
+
+            switch (evt.key) {
+            case 'Enter':
+                this.$emit('action:close');
+                break;
+            case 'Escape':
+                this.$emit('action:close');
+                break;
+            default:
+                break;
+            }
+
+            this.isProcessing = false
+        },
+        deleteData(value) {
+            this.$emit('delete:data', value);
+            this.isSubmitModal = false;
+        },
+    },
+    destroyed() {
+        window.removeEventListener('keyup', this.keyEventListener, false);
     }
 }
 </script>

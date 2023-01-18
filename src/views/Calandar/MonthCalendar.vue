@@ -16,16 +16,16 @@
         <div class="day-title">
           {{ day.class ? day.day : null }}
         </div>
-        <div v-if="data[`${day.month}-${day.day}`]" class="day-plans">
-          <div class="day-plan-all" v-for="(content, idx) of data[`${day.month}-${day.day}`].slice(0, 3)" 
+        <div v-if="monthData.data[`${day.month}-${day.day}`]" class="day-plans">
+          <div :class="`day-plan${content.time === 'all' ? '-all' : '-time' }`" v-for="(content, idx) of monthData.data[`${day.month}-${day.day}`].slice(0, 3)" 
             :key="idx"
-            @click.stop="showSubmitModal({ ...day, ...content, idx }, true)">
+            @click.stop="showSubmitModal({ ...day, ...content }, true)">
             <span class="day-plan-title">{{ content.title }}</span> 
             - <span class="day-plan-content">{{ content.content }}</span>
           </div>
-          <div v-if="data[`${day.month}-${day.day}`].length > 3">
+          <div v-if="monthData.data[`${day.month}-${day.day}`].length > 3">
             <button class="btn" @click.stop="showMoreData(day)">
-              {{data[`${day.month}-${day.day}`].length - 3}}개 더보기
+              {{monthData.data[`${day.month}-${day.day}`].length - 3}}개 더보기
             </button>
           </div>
         </div>
@@ -36,12 +36,14 @@
       :modalDateInfor="targetDate" 
       @action:close="isSubmitModal=false" 
       @create:submit="saveData"
-      @update:submit="updateData" />
+      @update:submit="updateData"
+      @delete:data="deleteData" />
     <plans-modal 
       v-if="isPlansShowModal"
-      :modalPlansInfor="showData"
+      :modalPlansInfor="monthData.data[targetDay]"
       @action:close="isPlansShowModal=false"
-      @update:submit="updateData" />
+      @update:submit="updateData"
+      @delete:data="deleteData" />
   </div>
 </template>
 
@@ -56,11 +58,7 @@ export default {
     PlansModal,
   },
   props: {
-    date: {
-      type: Object,
-      default: () => {return {}},
-    },
-    data: {
+    monthData: {
       type: Object,
       default: () => {return {}},
     },
@@ -70,6 +68,7 @@ export default {
       isPlansShowModal: false,
       isSubmitModal: false,
       days: [],
+      targetday: null,
       targetDate: null,
       dynamicHeight: 0,
     }
@@ -86,8 +85,8 @@ export default {
       if (date.class) {
         this.targetDate = {
           ...date,
-          'year': this.date.year,
-          'month': this.date.month,
+          'year': this.monthData.year,
+          'month': this.monthData.month,
           type,
         }
 
@@ -95,7 +94,7 @@ export default {
       }
     },
     setCardHeight() {
-      const totalDay = this.date.firstDate + this.date.lastDay;
+      const totalDay = this.monthData.firstDate + this.monthData.lastDay;
 
       this.dynamicHeight = {
         // 줄당 1px 씩
@@ -103,7 +102,7 @@ export default {
       };
     },
     setMonthCalendar() {
-      const totalDay = this.date.firstDate + this.date.lastDay;
+      const totalDay = this.monthData.firstDate + this.monthData.lastDay;
       this.days = [];
 
       for (let i=0;i<Math.ceil(totalDay / 7) * 7;i++) {
@@ -115,14 +114,15 @@ export default {
           'date': null,
         };
 
-        if (i < this.date.firstDate || i >= this.date.lastDay + this.date.firstDate) {
+        if (i < this.monthData.firstDate 
+          || i >= this.monthData.lastDay + this.monthData.firstDate) {
           cardInforType['class'] = false;
 
           this.days.push(cardInforType);
         } else {
-          cardInforType['year'] = this.date.year;
-          cardInforType['month'] = this.date.month;
-          cardInforType['day'] = ((i - this.date.firstDate) + 1).toString().padStart(2, '0');
+          cardInforType['year'] = this.monthData.year;
+          cardInforType['month'] = this.monthData.month;
+          cardInforType['day'] = ((i - this.monthData.firstDate) + 1).toString().padStart(2, '0');
           cardInforType['date'] = i % 7;
 
           this.days.push(cardInforType);
@@ -130,46 +130,47 @@ export default {
       }
     },
     showMoreData(target) {
-      const { month, day } = target;
-      this.showData = { date: target, data: this.data[`${month}-${day}`] };
+      this.targetDay = `${target.month}-${target.day}`;
       this.isPlansShowModal = true;
     },
     saveData(value) {
-      const [ year, month, day ] = value.date.split('-');
+      const [ year, month, day ] = value.fulldate.split('-');
       
       const submitData = {};
 
       // eslint-disable-next-line no-prototype-builtins
-      if (this.data.hasOwnProperty(`${month}-${day}`)) {
-        if (this.data[`${month}-${day}`].length === 10) return;
-        submitData[`${month}-${day}`] = [ ...this.data[`${month}-${day}`], value ]
-      } else {
-        submitData[`${month}-${day}`] = [value];
-      }
-
+      this.monthData.data.hasOwnProperty(`${month}-${day}`) ?
+        submitData[`${month}-${day}`] = [ ...this.monthData.data[`${month}-${day}`], value ]
+        : submitData[`${month}-${day}`] = [value];
+        
       this.$emit('update:data', { year, submitData });
       this.isSubmitModal = false;
     },
     updateData(value) {
-      const [ year, month, day ] = value.date.split('-');
+      const [ year, month, day ] = value.fulldate.split('-');
+      const baseData = this.monthData.data[`${month}-${day}`].filter((item) => item.uid !== value.uid);
+      const submitData = {};
 
-      const baseData = this.data[`${month}-${day}`].filter((item, idx) => idx !== value.idx);
+      submitData[`${month}-${day}`] = [ ...baseData, value ]
+
+      this.$emit('update:data', { year, submitData });
+      this.isSubmitModal = false;
+    },
+    deleteData(value) {
+      const [ year, month, day ] = value.fulldate.split('-');
+      const baseData = this.monthData.data[`${month}-${day}`].filter((item) => item.uid !== value.uid)
 
       const submitData = {};
-      submitData[`${month}-${day}`] = [ ...baseData, value ]
+      submitData[`${month}-${day}`] = baseData
 
       this.$emit('update:data', { year, submitData });
       this.isSubmitModal = false;
     }
   },
   watch: {
-    date() {
-      this.init()
-    },
-    data(value) {
+    monthData() {
       this.init();
-      this.$set(this.showData, 'data', Object.values(value)[0]); 
-    }
+    },
   }
 }
 </script>

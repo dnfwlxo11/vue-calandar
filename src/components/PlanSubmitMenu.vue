@@ -2,7 +2,9 @@
   <div id="plan-submit-modal">
     <div class="modal">
       <div class="modal-header">
-        <div class="header-left"></div>
+        <div class="header-left">
+          <button class="btn btn-danger" @click.stop="deleteData(modalDateInfor);">삭제</button>
+        </div>
         {{modalType ? '일정 수정' : '일정 등록' }}
         <div class="mdi mdi-close header-right" @click="$emit('action:close')"></div>
       </div>
@@ -13,7 +15,7 @@
         </div>
         <div class="body-date">
           <div class="mdi mdi-calendar-month-outline"></div>
-          <input style="margin-right: 10px;" type="date" v-model="submitData.date">
+          <input style="margin-right: 10px;" type="date" v-model="submitData.fulldate">
           <div style="margin: auto 0 auto 0;">
             <button :class="isFullDay ? 'btn' : 'btn-outline'"
               @click="isFullDay=!isFullDay">{{isFullDay ? '종일' : '시간대'}}</button>
@@ -47,6 +49,7 @@ export default {
     data() {
       return {
         modalType: false,
+        isProcessing: false,
         isFullDay: true,
         submitData: {
           'title': null,
@@ -58,19 +61,28 @@ export default {
     },
     created() {
       this.setTargetDate();
+      window.addEventListener('keyup', this.keyEventListener);
     },
     methods: {
       setTargetDate() {
-        const year = this.modalDateInfor.year;
-        const month = this.modalDateInfor.month;
-        const day = this.modalDateInfor.day;
+        const { year, month, day } = this.modalDateInfor;
 
         this.modalType = this.modalDateInfor.type;
         this.submitData = {
           ...this.modalDateInfor,
-          'date': `${year}-${month}-${day.toString().padStart(2, '0')}`,
+          'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
           'time': this.isFullDay ? 'all' : '08:00:00',
         };
+
+        if (!this.modalType) {
+          const additionalData = {
+            'created_ts': this.$Utils.dateUtils.getNow(),
+            'updated_ts': this.$Utils.dateUtils.getNow(),
+            'uid': this.$Utils.convenience.getUUID(),
+          }
+
+          this.submitData = { ...this.submitData, ...additionalData };
+        }
       },
       submit() {
         if (!this.submitData.title) return;
@@ -79,8 +91,35 @@ export default {
         this.modalType 
           ? this.$emit('update:submit', this.submitData)
           : this.$emit('create:submit', this.submitData); 
+      },
+      deleteData(uid) {
+        this.$emit('delete:data', uid)
+      },
+      keyEventListener(evt) {
+        // 중복 방지
+        if(this.isProcessing) return false;
+        this.isProcessing = true;
+
+        switch (evt.key) {
+          case 'Enter':
+            this.submit();
+            break;
+          case 'Escape':
+            this.$emit('action:close');
+            break;
+          case 'Delete':
+            this.deleteData(this.modalDateInfor);
+            break;
+          default:
+            break;
+        }
+
+        this.isProcessing = false
       }
     },
+    destroyed() {
+      window.removeEventListener('keyup', this.keyEventListener, false);
+    }
 }
 </script>
 
@@ -227,6 +266,10 @@ export default {
   border-radius: 0.25rem;
   border: none;
 
+  &-danger {
+    background: #FF4646;
+  }
+
   &:hover {
     cursor: pointer;
   }
@@ -240,6 +283,10 @@ export default {
   border-radius: 0.25rem;
   border: 1px solid #413BF7;
   font-weight: 600;
+
+  &-danger {
+    border: #FF4646;
+  }
 
   &:hover {
     cursor: pointer;

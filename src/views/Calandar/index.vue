@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="calandar-body">
-      <month-calendar v-if="currMode==='month'" :date="initDate" :data="initData[initDate.year]" @update:data="updateData" />
+      <month-calendar v-if="currMode==='month'" :monthData="{ ...initDate, data: initData[initDate.year] }" @update:data="updateData" />
       <week-calendar v-else-if="currMode==='week'" />
       <day-calendar v-else-if="currMode==='day'" />
     </div>
@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import MonthCalendar from './vues/MonthCalendar.vue'
-import WeekCalendar from './vues/WeekCalendar.vue'
-import DayCalendar from './vues/DayCalendar.vue'
+import MonthCalendar from './MonthCalendar.vue'
+import WeekCalendar from './WeekCalendar.vue'
+import DayCalendar from './DayCalendar.vue'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -45,48 +45,39 @@ export default {
   methods: {
     init() {
       // date 초기설정
-      const tmpDate = JSON.parse(localStorage.getItem('currDate'));
+      const tmpDate = this.$Utils.localDB.selectData('currDate');
       tmpDate === null ? this.setDate() : this.initDate = tmpDate;
 
       // calendar data 초기설정
-      let tmpData = JSON.parse(localStorage.getItem('calendarData'));
+      let tmpData = this.$Utils.localDB.selectData('calendarData');
 
-      if (tmpData === null) {
-        localStorage.setItem('calendarData', JSON.stringify({}));
-        tmpData = JSON.parse(localStorage.getItem('calendarData'));
-      }
+      if (tmpData === null) 
+        tmpData = this.$Utils.localDB.insertData('calendarData', {});
 
       const targetYear = this.initDate.year;
         
       // eslint-disable-next-line no-prototype-builtins
       if (!tmpData.hasOwnProperty(targetYear)) {
         tmpData[targetYear] = {};
-        localStorage.setItem('calendarData', JSON.stringify(tmpData));
-        tmpData = JSON.parse(localStorage.getItem('calendarData'));
+        tmpData = this.$Utils.localDB.insertData('calendarData', tmpData);
       }
 
       this.initData = tmpData;
     },
     setDate(date = null) {
       const targetDate = date === null ? new Date() : new Date(date);
+      const nowDateInfor = this.$Utils.dateUtils.extractDateInfor(targetDate);
 
-      let nowDateInfor = this.$Utils.dateUtils.extractDateInfor(targetDate);
-      const lastDayInfor = this.$Utils.dateUtils.getLastDay(nowDateInfor.year, nowDateInfor.month);
-
-      nowDateInfor = { ...nowDateInfor, ...lastDayInfor }
-
-      localStorage.setItem('currDate', JSON.stringify(nowDateInfor));
-      this.initDate = nowDateInfor;
+      this.initDate = this.$Utils.localDB.insertData('currDate', nowDateInfor);
     },
     setData() {
-      let tmpData = JSON.parse(localStorage.getItem('calendarData'));
+      let tmpData = this.$Utils.localDB.selectData('calendarData');
       const targetYear = this.initDate.year;
         
       // eslint-disable-next-line no-prototype-builtins
       if (!tmpData.hasOwnProperty(targetYear)) {
         tmpData[targetYear] = {};
-        localStorage.setItem('calendarData', JSON.stringify(tmpData));
-        tmpData = JSON.parse(localStorage.getItem('calendarData'));
+        tmpData = this.$Utils.localDB.insertData('calendarData', tmpData);
       }
 
       this.initData = tmpData;
@@ -118,9 +109,11 @@ export default {
     },
     updateData(value) {
       const updateYear = value.year;
+      console.log(value)
+      console.log(this.initData)
       this.$set(this.initData, updateYear, { ...this.initData[updateYear], ...value.submitData })
-      localStorage.setItem('calendarData', JSON.stringify(this.initData));
-      this.initData = JSON.parse(localStorage.getItem('calendarData'));
+
+      this.initData = this.$Utils.localDB.insertData('calendarData', this.initData);
     },
   },
   created() {
