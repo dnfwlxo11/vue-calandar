@@ -3,13 +3,24 @@ function selectData(tableName) {
     return JSON.parse(localStorage.getItem(tableName));
 }
 
+function selectDataByYear(tableName, year) {
+    return JSON.parse(localStorage.getItem(tableName))[year];
+}
+
 function insertData(tableName, data) {
     localStorage.setItem(tableName, JSON.stringify(data));
 
     return JSON.parse(localStorage.getItem(tableName));
 }
 
-function updateData(tableName, data) {}
+function updateData(tableName, data) {
+    let fullData = JSON.parse(localStorage.getItem(tableName));
+
+    fullData = { ...fullData, ...data };
+    localStorage.setItem(tableName, JSON.stringify(fullData));
+
+    return JSON.parse(localStorage.getItem(tableName));
+}
 
 function deleteData(tableName, data) {}
 
@@ -18,4 +29,5 @@ export default {
     updateData,
     deleteData,
     selectData,
+    selectDataByYear,
 }

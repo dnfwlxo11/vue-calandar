@@ -54,7 +54,6 @@ export default {
         isFullDay: true,
         submitData: {
           'title': null,
-          'date': null,
           'time': null,
           'content': null,
         }
@@ -87,7 +86,7 @@ export default {
         } else {
           this.submitData = {
             ...this.submitData,
-            'time': this.isFullDay ? '08:00' : 'all',
+            'time': this.isFullDay ? 'all' : '08:00',
             'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
             'created_ts': this.$Utils.dateUtils.getNow(),
             'updated_ts': this.$Utils.dateUtils.getNow(),

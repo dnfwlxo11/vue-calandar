@@ -25,8 +25,8 @@
       </div>
     </div>
     <div class="calandar-body">
-      <month-calendar v-if="calendarType==='month'" :monthData="{ ...initDate, data: initData[initDate.year] }" @update:data="updateData" />
-      <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[initDate.year] }" />
+      <month-calendar v-if="calendarType==='month'" :monthData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
+      <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[this.initDate.month] }" />
       <day-calendar v-else-if="calendarType==='day'" />
     </div>
   </div>
@@ -49,7 +49,7 @@ export default {
     return {
       initDate: null,
       initData: null,
-      calendarType: 'week',
+      calendarType: 'month',
     }
   },
   created() {
@@ -65,17 +65,9 @@ export default {
       let tmpData = this.$Utils.localDB.selectData('calendarData');
 
       if (tmpData === null) 
-        tmpData = this.$Utils.localDB.insertData('calendarData', {});
+        this.$Utils.localDB.insertData('calendarData', {});
 
-      const targetYear = this.initDate.year;
-        
-      // eslint-disable-next-line no-prototype-builtins
-      if (!tmpData.hasOwnProperty(targetYear)) {
-        tmpData[targetYear] = {};
-        tmpData = this.$Utils.localDB.insertData('calendarData', tmpData);
-      }
-
-      this.initData = tmpData;
+      this.setData();
     },
     setDate(date = null) {
       // 월 관련 데이터 설정
@@ -94,16 +86,20 @@ export default {
       this.initDate = this.$Utils.localDB.insertData('currDate', nowDateInfor);
     },
     setData() {
-      let tmpData = this.$Utils.localDB.selectData('calendarData');
       const targetYear = this.initDate.year;
-        
+      let tmpData = this.$Utils.localDB.selectData('calendarData');
+      
       // eslint-disable-next-line no-prototype-builtins
       if (!tmpData.hasOwnProperty(targetYear)) {
         tmpData[targetYear] = {};
-        tmpData = this.$Utils.localDB.insertData('calendarData', tmpData);
+        ['01', '02', '03', '04', '05', '06', 
+          '07', '08', '09', '10', '11', '12'].map(month => {
+            tmpData[targetYear][month] = {};
+        })
+        tmpData = this.$Utils.localDB.updateData('calendarData', tmpData);
       }
 
-      this.initData = tmpData;
+      this.initData = tmpData[targetYear];
     },
     monthControll(flag) {
       let year = this.initDate.year;
@@ -160,14 +156,15 @@ export default {
           this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
         }
       }
-
-      console.log(this.initData)
     },
     updateData(value) {
-      const updateYear = value.year;
-      this.$set(this.initData, updateYear, { ...this.initData[updateYear], ...value.submitData })
+      const updateYear = this.initDate.year;
+      const fullData = this.$Utils.localDB.selectData('calendarData');
 
-      this.initData = this.$Utils.localDB.insertData('calendarData', this.initData);
+      fullData[updateYear] = { ...this.initData, ...value };
+      this.initData = this.$Utils.localDB.insertData('calendarData', fullData)[updateYear];
+
+      this.setData();
     },
   },
 }
