@@ -8,6 +8,7 @@ function extractDateInfor(dateObj) {
     const lastDay = new Date(year, month, 0).getDate();
     const firstDate = new Date(`${year}-${month}-01`).getDay();
     const lastDate = new Date(`${year}-${month}-${lastDay}`).getDay();
+    const nowDate = new Date(`${year}-${month}-${day}`).getDay();
     const nowWeek = Math.ceil((new Date(`${year}-${month}-${day}`).getDate() + firstDate) / 7);
     const totalWeek = Math.ceil((firstDate + lastDay) / 7);
 
@@ -17,6 +18,7 @@ function extractDateInfor(dateObj) {
         day,
         firstDay,
         lastDay,
+        nowDate,
         firstDate,
         lastDate,
         nowWeek,

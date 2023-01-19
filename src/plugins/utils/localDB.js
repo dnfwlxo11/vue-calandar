@@ -3,10 +3,6 @@ function selectData(tableName) {
     return JSON.parse(localStorage.getItem(tableName));
 }
 
-function selectDataByYear(tableName, year) {
-    return JSON.parse(localStorage.getItem(tableName))[year];
-}
-
 function insertData(tableName, data) {
     localStorage.setItem(tableName, JSON.stringify(data));
 
@@ -29,5 +25,4 @@ export default {
     updateData,
     deleteData,
     selectData,
-    selectDataByYear,
 }

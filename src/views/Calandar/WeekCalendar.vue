@@ -32,11 +32,11 @@
                   <div v-for="(dayData, dayDataIdx) of weekData.data[day.toString().padStart(2, '0')]" 
                     :key="dayDataIdx">
                     <div v-if="dayData.time === 'all'" 
-                      class="day-plan day-plan-all"
-                      @click.stop="showSubmitModal(dayData, true)">
+                      class="week-plan week-plan-all"
+                      @click.stop="showSubmitModal({ ...dayData, day }, true)">
                       <span class="mdi mdi-check-circle-outline"></span>
-                      <span class="day-plan-title">{{ dayData.title }}</span> 
-                      - <span class="day-plan-content">{{ dayData.content }}</span>
+                      <span class="week-plan-title">{{ dayData.title }}</span> 
+                      - <span class="week-plan-content">{{ dayData.content }}</span>
                     </div>
                   </div>
                 </div>
@@ -47,16 +47,16 @@
                   <div v-for="(dayData, dayDataIdx) of weekData.data[day.toString().padStart(2, '0')]" 
                     :key="dayDataIdx">
                     <div v-if="dayData.time.split(':')[0] === time.split(':')[0]" 
-                      class="day-plan day-plan-time"
-                      @click.stop="showSubmitModal(dayData, true)">
+                      class="week-plan week-plan-time"
+                      @click.stop="showSubmitModal({ ...dayData, day }, true)">
                       <span class="mdi mdi-timer-outline"></span>
-                      <span class="day-plan-title">{{ dayData.title }}</span> 
-                      - <span class="day-plan-content">{{ dayData.content }}</span>
+                      <span class="week-plan-title">{{ dayData.title }}</span> 
+                      - <span class="week-plan-content">{{ dayData.content }}</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div v-else class="day-plans">
+              <div v-else class="week-plans">
                 <div class="week-all" @click.stop="showSubmitModal({ day, time: 'all' })"></div>
                 <div class="week-time" 
                   v-for="(time, timeIdx) of timeKeys" 
@@ -107,17 +107,14 @@ export default {
         '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 
         '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', 
       ],
-      isHover: false,
       isSubmitModal: false,
-      targetday: null,
       targetDate: null,
       weekNavDay: [],
       weekStartDay: null,
       weekEndDay: null,
-      monthLastDay: null,
     }
   },
-  mounted() {
+  created() {
     this.init();
   },
   methods: {
@@ -125,7 +122,6 @@ export default {
       this.weekNavDay = [];
       this.weekStartDay = this.weekData.weekStartDay;
       this.weekEndDay = this.weekData.weekEndDay;
-      this.monthLastDay = this.weekData.lastDay;
 
       for (let i=this.weekStartDay;i<=this.weekEndDay;i++) {
         if (i < 1) this.weekNavDay.push(null)
@@ -148,7 +144,7 @@ export default {
       const dayData = {};
 
       // eslint-disable-next-line no-prototype-builtins
-      this.monthData.data.hasOwnProperty(day)
+      this.weekData.data.hasOwnProperty(day)
         ? dayData[day] = [ ...this.weekData.data[day], value]
         : dayData[day] = [value]
 
@@ -203,7 +199,6 @@ export default {
 .week-nav {
   height: 60px;
   display: flex;
-  // justify-content: space-between;
   font-weight: 600;
   border-bottom: 1px solid lightgrey;
   padding-left: 70px;
@@ -235,7 +230,6 @@ export default {
       font-size: 14px;
       color: #282828;
       font-weight: 600;
-      
 
       & .vertical-all {
         top: 0;
@@ -251,11 +245,11 @@ export default {
 
       & .vertical-times {
         & .vertical-time {
-          height: 140px;
+          padding-top: 11px;
+          height: 130px;
           width: 100%;
         }
       }
-      
     }
 
     & .week-body-content {
@@ -268,7 +262,7 @@ export default {
         & .week-times {
           border-right: 1px solid lightgrey;
 
-          & .day-plan {
+          & .week-plan {
             text-align: left;
             // 양쪽 3px 씩
             width: calc(100% - 6px);
@@ -288,6 +282,16 @@ export default {
 
             &-all {
               background: #EEDDFF;
+            }
+
+            & .week-plan-title {
+              font-size: 16px;
+              font-weight: 600;
+            }
+
+            & .week-plan-content {
+              font-size: 14px;
+              font-weight: 400;
             }
           }
 

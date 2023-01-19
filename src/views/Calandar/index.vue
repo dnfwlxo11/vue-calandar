@@ -15,19 +15,24 @@
           {{initDate.year}}년 {{initDate.month}}월 <small>{{ initDate.nowWeek }}주차</small>
           <button class="mdi mdi-chevron-right" @click="weekControll('next')"></button>
         </div>
+        <div v-else>
+          <button class="mdi mdi-chevron-left" @click="weekControll('prev')"></button>
+          {{initDate.year}}년 {{initDate.month}}월 {{ initDate.day }}일
+          <button class="mdi mdi-chevron-right" @click="weekControll('next')"></button>
+        </div>
       </div>
       <div class="menu-sector">
         <select name="calandar-menu" id="calandar-menu" v-model="calendarType">
-          <option value="month" selected>월</option>
-          <option value="week">주</option>
-          <option value="day">일</option>
+          <option value="month" selected>월간</option>
+          <option value="week">주간</option>
+          <option value="day">일간</option>
         </select>
       </div>
     </div>
     <div class="calandar-body">
       <month-calendar v-if="calendarType==='month'" :monthData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
-      <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[this.initDate.month] }" />
-      <day-calendar v-else-if="calendarType==='day'" />
+      <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
+      <day-calendar v-else-if="calendarType==='day'" :dayData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
     </div>
   </div>
 </template>
@@ -49,7 +54,7 @@ export default {
     return {
       initDate: null,
       initData: null,
-      calendarType: 'week',
+      calendarType: 'day',
     }
   },
   created() {

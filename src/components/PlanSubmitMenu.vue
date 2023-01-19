@@ -61,9 +61,9 @@ export default {
     },
     created() {
       this.setTargetDate();
+      console.log(this.modalDateInfor, 'modal date')
     },
     mounted() {
-      console.log(this.modalDateInfor, 'this.modalDateInfor');
       this.modalRef = this.$refs['plan-submit-modal'];
       this.modalRef.focus();
       this.modalRef.addEventListener('keyup', this.keyEventListener);
@@ -71,7 +71,8 @@ export default {
     methods: {
       setTargetDate() {
         const { year, month, day } = this.modalDateInfor;
-
+        console.log(day)
+        console.log(day.toString().padStart(2, '0'))
         this.modalType = this.modalDateInfor.type;
         
         this.modalDateInfor.time === 'all' 
@@ -105,7 +106,6 @@ export default {
       },
       setFullDay() {
         this.isFullDay = !this.isFullDay;
-        console.log(this.isFullDay)
         this.isFullDay
           ? this.$set(this.submitData, 'time', 'all')
           : this.$set(this.submitData, 'time', this.modalDateInfor.time === 'all' ? '08:00' : this.modalDateInfor.time);

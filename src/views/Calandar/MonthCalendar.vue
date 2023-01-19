@@ -98,6 +98,7 @@ export default {
           'month': this.monthData.month,
           type,
         }
+        console.log(this.targetDate, 'month')
 
         this.isSubmitModal = true;
       }
@@ -279,12 +280,12 @@ export default {
             font-size: 16px;
             font-weight: 600;
           }
-        }
-      }
 
-      & .day-plan-content {
-        font-size: 14px;
-        font-weight: 400;
+          & .day-plan-content {
+            font-size: 14px;
+            font-weight: 400;
+          }
+        }
       }
     }
   }
