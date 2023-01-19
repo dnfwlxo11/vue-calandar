@@ -94,8 +94,7 @@ export default {
       const targetYear = this.initDate.year;
       let tmpData = this.$Utils.localDB.selectData('calendarData');
       
-      // eslint-disable-next-line no-prototype-builtins
-      if (!tmpData.hasOwnProperty(targetYear)) {
+      if (!Object.prototype.hasOwnProperty.call(tmpData, targetYear)) {
         tmpData[targetYear] = {};
         ['01', '02', '03', '04', '05', '06', 
           '07', '08', '09', '10', '11', '12'].map(month => {

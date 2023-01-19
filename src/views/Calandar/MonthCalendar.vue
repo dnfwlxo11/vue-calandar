@@ -25,6 +25,7 @@
                   @click.stop="showSubmitModal({ ...day, ...content }, true)">
                   <span v-if="content.time !== 'all'" class="mdi mdi-timer-outline"></span>
                   <span v-else class="mdi mdi-check-circle-outline"></span>
+                  <span v-if="content.time !== 'all'" style="margin-right: 3px;">[{{ content.time }}]</span>
                   <span class="day-plan-title">{{ content.title }}</span> 
                   - <span class="day-plan-content">{{ content.content }}</span>
                 </div>
@@ -146,14 +147,12 @@ export default {
       
       const dayData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
-      this.monthData.data.hasOwnProperty(day)
+      Object.prototype.hasOwnProperty.call(this.monthData, day)
         ? dayData[day] = [ ...this.monthData.data[day], value]
         : dayData[day] = [value]
 
       let submitData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
       submitData[month] = { ...this.monthData.data, ...dayData }
 
       this.$emit('update:data', submitData);
@@ -319,6 +318,5 @@ export default {
 
 .mdi {
   font-size: 14px;
-  margin: 0 3px 0 3px;
 }
 </style>

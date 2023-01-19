@@ -27,7 +27,7 @@
         <div class="week-body-content">
           <div class="week-contents" v-for="(day, dayIdx) of weekNavDay" :key="dayIdx">
             <div class="week-times">
-              <div v-if="weekData.data.hasOwnProperty(parseInt(day).toString().padStart(2, '0'))">
+              <div v-if="Object.prototype.hasOwnProperty.call(weekData.data, parseInt(day).toString().padStart(2, '0'))">
                 <div class="week-all" @click.stop="showSubmitModal({ day, time: 'all' })">
                   <div v-for="(dayData, dayDataIdx) of weekData.data[day.toString().padStart(2, '0')]" 
                     :key="dayDataIdx">
@@ -50,6 +50,7 @@
                       class="week-plan week-plan-time"
                       @click.stop="showSubmitModal({ ...dayData, day }, true)">
                       <span class="mdi mdi-timer-outline"></span>
+                      <span style="margin-right: 3px;">[{{ dayData.time }}]</span>
                       <span class="week-plan-title">{{ dayData.title }}</span> 
                       - <span class="week-plan-content">{{ dayData.content }}</span>
                     </div>
@@ -143,14 +144,12 @@ export default {
       
       const dayData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
-      this.weekData.data.hasOwnProperty(day)
+      Object.prototype.hasOwnProperty.call(this.weekData.data, day)
         ? dayData[day] = [ ...this.weekData.data[day], value]
         : dayData[day] = [value]
 
       let submitData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
       submitData[month] = { ...this.weekData.data, ...dayData }
       
       this.$emit('update:data', submitData);
@@ -356,6 +355,5 @@ export default {
 
 .mdi {
   font-size: 14px;
-  margin: 0 3px 0 3px;
 }
 </style>

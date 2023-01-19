@@ -70,7 +70,7 @@ export default {
     methods: {
       setTargetDate() {
         const { year, month, day } = this.modalDateInfor;
-        
+
         this.modalType = this.modalDateInfor.type;
         
         this.modalDateInfor.time === 'all' 
@@ -119,9 +119,6 @@ export default {
         this.isProcessing = true;
 
         switch (evt.key) {
-          case 'Enter':
-            this.submit();
-            break;
           case 'Escape':
             this.$emit('action:close');
             break;

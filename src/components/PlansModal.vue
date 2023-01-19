@@ -18,6 +18,7 @@
                         @click="updateData(plan)">
                         <span v-if="plan.time !== 'all'" class="mdi mdi-timer-outline"></span>
                         <span v-else class="mdi mdi-check-circle-outline"></span>
+                        <span v-if="plan.time !== 'all'" style="margin-right: 3px;">[{{ plan.time }}]</span>
                         <span class="plan-title">{{ plan.title }}</span> 
                         - <span class="plan-content">{{ plan.content }}</span>
                     </div>

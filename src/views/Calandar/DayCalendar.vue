@@ -21,7 +21,7 @@
         <div class="day-body-content">
           <div class="day-contents">
             <div class="day-times">
-              <div v-if="dayData.data.hasOwnProperty(parseInt(dayData.day).toString().padStart(2, '0'))">
+              <div v-if="Object.prototype.hasOwnProperty.call(dayData.data, parseInt(dayData.day).toString().padStart(2, '0'))">
                 <div class="day-all" @click.stop="showSubmitModal({ day: dayData.day, time: 'all' })">
                   <div v-for="(datas, dataIdx) of dayData.data[dayData.day.toString().padStart(2, '0')]" 
                     :key="dataIdx">
@@ -44,6 +44,7 @@
                       class="day-plan day-plan-time"
                       @click.stop="showSubmitModal({ ...datas, day: dayData.day }, true)">
                       <span class="mdi mdi-timer-outline"></span>
+                      <span style="margin-right: 3px;">[{{ datas.time }}]</span>
                       <span class="day-plan-title">{{ datas.title }}</span> 
                       - <span class="day-plan-content">{{ datas.content }}</span>
                     </div>
@@ -125,14 +126,12 @@ export default {
       
       const tmpDayData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
-      this.dayData.data.hasOwnProperty(day)
+      Object.prototype.hasOwnProperty.call(this.dayData.data, day)
         ? tmpDayData[day] = [ ...this.dayData.data[day], value]
         : tmpDayData[day] = [value]
 
       let submitData = {};
 
-      // eslint-disable-next-line no-prototype-builtins
       submitData[month] = { ...this.dayData.data, ...tmpDayData }
       
       this.$emit('update:data', submitData);
