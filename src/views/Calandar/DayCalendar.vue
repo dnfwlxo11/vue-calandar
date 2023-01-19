@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue'
+import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue';
 
 export default {
   name: 'DayCalandar',
@@ -90,7 +90,7 @@ export default {
   props: {
     dayData: {
       type: Object,
-      default: () => {return {}},
+      default: () => {return {};},
     }
   },
   data() {
@@ -108,7 +108,7 @@ export default {
       ],
       isSubmitModal: false,
       targetDate: null,
-    }
+    };
   },
   methods: {
     showSubmitModal(date, type=false) {
@@ -117,7 +117,7 @@ export default {
         'year': this.dayData.year,
         'month': this.dayData.month,
         type,
-      }
+      };
 
       this.isSubmitModal = true;
     },
@@ -128,11 +128,11 @@ export default {
 
       Object.prototype.hasOwnProperty.call(this.dayData.data, day)
         ? tmpDayData[day] = [ ...this.dayData.data[day], value]
-        : tmpDayData[day] = [value]
+        : tmpDayData[day] = [value];
 
       let submitData = {};
 
-      submitData[month] = { ...this.dayData.data, ...tmpDayData }
+      submitData[month] = { ...this.dayData.data, ...tmpDayData };
       
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
@@ -141,8 +141,8 @@ export default {
       const [ year, month, day ] = value.fulldate.split('-');
       const baseData = this.dayData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
-      const tmpDayData = {}
-      tmpDayData[day] = [ ...baseData, value]
+      const tmpDayData = {};
+      tmpDayData[day] = [ ...baseData, value];
 
       let submitData = {};
       submitData[month] = { ...this.dayData.data, ...tmpDayData };
@@ -152,7 +152,7 @@ export default {
     },
     deleteData(value) {
       const [ year, month, day ] = value.fulldate.split('-');
-      const baseData = this.dayData.data[day].filter((dayData) => dayData.uid !== value.uid)
+      const baseData = this.dayData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
       const tmpDayData = {};
       tmpDayData[day] = baseData;
@@ -164,7 +164,7 @@ export default {
       this.isSubmitModal = false;
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

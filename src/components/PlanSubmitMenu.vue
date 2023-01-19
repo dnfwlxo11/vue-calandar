@@ -3,7 +3,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="header-left">
-          <button class="btn btn-danger" @click.stop="deleteData(modalDateInfor);">삭제</button>
+          <button v-if="modalType" class="btn btn-danger" @click.stop="deleteData(modalDateInfor);">삭제</button>
         </div>
         {{modalType ? '일정 수정' : '일정 등록' }}
         <div class="mdi mdi-close header-right" @click="$emit('action:close')"></div>
@@ -39,103 +39,103 @@
 
 <script>
 export default {
-    name: 'PlanSubmitModal',
-    props: {
-      modalDateInfor: {
-        type: Object,
-        default: () => {return {}},
-      },
+  name: 'PlanSubmitModal',
+  props: {
+    modalDateInfor: {
+      type: Object,
+      default: () => {return {};},
     },
-    data() {
-      return {
-        modalRef: null,
-        modalType: false,
-        isProcessing: false,
-        isFullDay: true,
-        submitData: {
-          'title': null,
-          'time': null,
-          'content': null,
-        }
+  },
+  data() {
+    return {
+      modalRef: null,
+      modalType: false,
+      isProcessing: false,
+      isFullDay: true,
+      submitData: {
+        'title': null,
+        'time': null,
+        'content': null,
+      }
+    };
+  },
+  created() {
+    this.setTargetDate();
+  },
+  mounted() {
+    this.modalRef = this.$refs['plan-submit-modal'];
+    this.modalRef.focus();
+    this.modalRef.addEventListener('keyup', this.keyEventListener);
+  },
+  methods: {
+    setTargetDate() {
+      const { year, month, day } = this.modalDateInfor;
+
+      this.modalType = this.modalDateInfor.type;
+      
+      this.modalDateInfor.time === 'all' 
+        ? this.isFullDay = true 
+        : this.isFullDay = false;
+
+      // true는 수정 false는 생성
+      if (this.modalType) {
+        this.submitData = {
+          ...this.modalDateInfor,
+          'updated_ts': this.$Utils.dateUtils.getNow(),
+        };
+      } else {
+        this.submitData = {
+          ...this.submitData,
+          'time': this.modalDateInfor.time,
+          'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
+          'created_ts': this.$Utils.dateUtils.getNow(),
+          'updated_ts': this.$Utils.dateUtils.getNow(),
+          'uid': this.$Utils.convenience.getUUID(),
+        };
       }
     },
-    created() {
-      this.setTargetDate();
+    submit() {
+      if (!this.submitData.title) return;
+      if (!this.submitData.content) return;
+
+      this.modalType 
+        ? this.$emit('update:submit', this.submitData)
+        : this.$emit('create:submit', this.submitData); 
     },
-    mounted() {
-      this.modalRef = this.$refs['plan-submit-modal'];
-      this.modalRef.focus();
-      this.modalRef.addEventListener('keyup', this.keyEventListener);
+    setFullDay() {
+      this.isFullDay = !this.isFullDay;
+      this.isFullDay
+        ? this.$set(this.submitData, 'time', 'all')
+        : this.$set(this.submitData, 'time', this.modalDateInfor.time === 'all' ? '08:00' : this.modalDateInfor.time);
     },
-    methods: {
-      setTargetDate() {
-        const { year, month, day } = this.modalDateInfor;
+    deleteData(uid) {
+      this.$emit('delete:data', uid);
+    },
+    keyEventListener(evt) {
+      evt.stopPropagation();
 
-        this.modalType = this.modalDateInfor.type;
-        
-        this.modalDateInfor.time === 'all' 
-          ? this.isFullDay = true 
-          : this.isFullDay = false;
+      // 중복 방지
+      if(this.isProcessing) return false;
+      this.isProcessing = true;
 
-        // true는 수정 false는 생성
-        if (this.modalType) {
-          this.submitData = {
-            ...this.modalDateInfor,
-            'updated_ts': this.$Utils.dateUtils.getNow(),
-          };
-        } else {
-          this.submitData = {
-            ...this.submitData,
-            'time': this.modalDateInfor.time,
-            'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
-            'created_ts': this.$Utils.dateUtils.getNow(),
-            'updated_ts': this.$Utils.dateUtils.getNow(),
-            'uid': this.$Utils.convenience.getUUID(),
-          }
-        }
-      },
-      submit() {
-        if (!this.submitData.title) return;
-        if (!this.submitData.content) return;
-
-        this.modalType 
-          ? this.$emit('update:submit', this.submitData)
-          : this.$emit('create:submit', this.submitData); 
-      },
-      setFullDay() {
-        this.isFullDay = !this.isFullDay;
-        this.isFullDay
-          ? this.$set(this.submitData, 'time', 'all')
-          : this.$set(this.submitData, 'time', this.modalDateInfor.time === 'all' ? '08:00' : this.modalDateInfor.time);
-      },
-      deleteData(uid) {
-        this.$emit('delete:data', uid)
-      },
-      keyEventListener(evt) {
-        evt.stopPropagation();
-
-        // 중복 방지
-        if(this.isProcessing) return false;
-        this.isProcessing = true;
-
-        switch (evt.key) {
-          case 'Escape':
-            this.$emit('action:close');
-            break;
-          case 'Delete':
-            this.deleteData(this.modalDateInfor);
-            break;
-          default:
-            break;
-        }
-
-        this.isProcessing = false
+      switch (evt.key) {
+      case 'Escape':
+        this.$emit('action:close');
+        break;
+      case 'Delete':
+        this.deleteData(this.modalDateInfor);
+        break;
+      default:
+        break;
       }
-    },
-    destroyed() {
-      this.modalRef.removeEventListener('keyup', this.keyEventListener, false);
+
+      this.isProcessing = false;
     }
-}
+  },
+  destroyed() {
+    this.modalRef.removeEventListener('keyup', this.keyEventListener, false);
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -146,14 +146,14 @@ export default {
 
   min-width: 300px;
   min-height: 400px;
-  height: 50%;
+  // height: 50%;
   width: 30%;
 
   @media (pointer:coarse) {
     top: calc(50% - 35%);
     left: calc(50% - 45%);
 
-    height: 70%;
+    // height: 70%;
     width: 90%;
   }
 
@@ -167,7 +167,7 @@ export default {
   box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
 
   & .modal-header, .modal-footer {
-    padding: 0 20px 0 20px;
+    padding: 10px 20px 10px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -211,7 +211,7 @@ export default {
 
     & .body-title {
       width: 100%;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
 
       & .title-input {
         padding: 7px;
@@ -253,12 +253,12 @@ export default {
     }
 
     & .body-time {
-      position: relative;
       height: 30px;
     }
 
     & .body-content {
       & textarea {
+        width: 80%;
         padding: 5px;
         background: #F1F3F5;
         border: none;
@@ -270,6 +270,7 @@ export default {
 
   & .modal-footer {
     height: 10%;
+    padding: 20px;
     background: white;
     justify-content: flex-end;
   }

@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue'
+import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue';
 
 export default {
   name: 'WeekCalandar',
@@ -92,7 +92,7 @@ export default {
   props: {
     weekData: {
       type: Object,
-      default: () => {return {}}
+      default: () => {return {};}
     }
   },
   data() {
@@ -113,7 +113,7 @@ export default {
       weekNavDay: [],
       weekStartDay: null,
       weekEndDay: null,
-    }
+    };
   },
   created() {
     this.init();
@@ -125,7 +125,7 @@ export default {
       this.weekEndDay = this.weekData.weekEndDay;
 
       for (let i=this.weekStartDay;i<=this.weekEndDay;i++) {
-        if (i < 1) this.weekNavDay.push(null)
+        if (i < 1) this.weekNavDay.push(null);
         else this.weekNavDay.push(i);
       }
     },
@@ -135,7 +135,7 @@ export default {
         'year': this.weekData.year,
         'month': this.weekData.month,
         type,
-      }
+      };
 
       this.isSubmitModal = true;
     },
@@ -146,11 +146,11 @@ export default {
 
       Object.prototype.hasOwnProperty.call(this.weekData.data, day)
         ? dayData[day] = [ ...this.weekData.data[day], value]
-        : dayData[day] = [value]
+        : dayData[day] = [value];
 
       let submitData = {};
 
-      submitData[month] = { ...this.weekData.data, ...dayData }
+      submitData[month] = { ...this.weekData.data, ...dayData };
       
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
@@ -159,8 +159,8 @@ export default {
       const [ year, month, day ] = value.fulldate.split('-');
       const baseData = this.weekData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
-      const dayData = {}
-      dayData[day] = [ ...baseData, value]
+      const dayData = {};
+      dayData[day] = [ ...baseData, value];
 
       let submitData = {};
       submitData[month] = { ...this.weekData.data, ...dayData };
@@ -170,7 +170,7 @@ export default {
     },
     deleteData(value) {
       const [ year, month, day ] = value.fulldate.split('-');
-      const baseData = this.weekData.data[day].filter((dayData) => dayData.uid !== value.uid)
+      const baseData = this.weekData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
       const dayData = {};
       dayData[day] = baseData;
@@ -187,7 +187,7 @@ export default {
       this.init();
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>

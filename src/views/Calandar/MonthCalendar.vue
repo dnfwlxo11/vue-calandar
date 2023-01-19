@@ -20,7 +20,7 @@
           <div v-for="(dayData, dayKey) in monthData.data" :key="dayKey" :style="{  'height': dayKey !== day.day ? '0%' : '100%'}">
               <div v-if="dayKey === day.day" class="day-plan-wrapper">
                 <div :class="`day-plan day-plan${content.time === 'all' ? '-all' : '-time' }`" 
-                  v-for="(content, contentIdx) of dayData.slice(0, 3)" 
+                  v-for="(content, contentIdx) of dayData" 
                   :key="contentIdx"
                   @click.stop="showSubmitModal({ ...day, ...content }, true)">
                   <span v-if="content.time !== 'all'" class="mdi mdi-timer-outline"></span>
@@ -30,9 +30,9 @@
                   - <span class="day-plan-content">{{ content.content }}</span>
                 </div>
               </div>
-              <div class="plan-more" v-if="dayData.length > 3 && dayKey === day.day">
+              <div class="plan-more" v-if="dayData.length && dayKey === day.day">
                 <button class="btn" @click.stop="showMoreData(day)">
-                  {{dayData.length - 3}}개 더보기
+                  펼쳐보기
                 </button>
               </div>
           </div>
@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue'
+import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue';
 import PlansModal from '@/components/PlansModal.vue';
 
 export default {
@@ -70,7 +70,7 @@ export default {
   props: {
     monthData: {
       type: Object,
-      default: () => {return {}},
+      default: () => {return {};},
     },
   },
   data() {
@@ -81,7 +81,7 @@ export default {
       targetday: null,
       targetDate: null,
       dynamicHeight: 0,
-    }
+    };
   },
   mounted() {
     this.init();
@@ -98,7 +98,7 @@ export default {
           'year': this.monthData.year,
           'month': this.monthData.month,
           type,
-        }
+        };
 
         this.isSubmitModal = true;
       }
@@ -147,13 +147,13 @@ export default {
       
       const dayData = {};
 
-      Object.prototype.hasOwnProperty.call(this.monthData, day)
+      Object.prototype.hasOwnProperty.call(this.monthData.data, day)
         ? dayData[day] = [ ...this.monthData.data[day], value]
-        : dayData[day] = [value]
+        : dayData[day] = [value];
 
       let submitData = {};
 
-      submitData[month] = { ...this.monthData.data, ...dayData }
+      submitData[month] = { ...this.monthData.data, ...dayData };
 
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
@@ -162,8 +162,8 @@ export default {
       const [ year, month, day ] = value.fulldate.split('-');
       const baseData = this.monthData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
-      const dayData = {}
-      dayData[day] = [ ...baseData, value]
+      const dayData = {};
+      dayData[day] = [ ...baseData, value];
 
       let submitData = {};
       submitData[month] = { ...this.monthData.data, ...dayData };
@@ -173,7 +173,7 @@ export default {
     },
     deleteData(value) {
       const [ year, month, day ] = value.fulldate.split('-');
-      const baseData = this.monthData.data[day].filter((dayData) => dayData.uid !== value.uid)
+      const baseData = this.monthData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
       const dayData = {};
       dayData[day] = baseData;
@@ -190,7 +190,7 @@ export default {
       this.init();
     },
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -244,8 +244,9 @@ export default {
       }
 
       & .day-plan-wrapper {
-        // more-btn 30px
-        height: calc(100% - 30px);
+        // more-btn 30px, 등록용 padding
+        padding-bottom: 40px;
+        height: calc(100% - 30px - 40px);
         overflow-y: auto;
 
         &::-webkit-scrollbar {

@@ -1,6 +1,6 @@
 <template>
-  <div id="calandar">
-    <div class="calandar-nav">
+  <div id="calendar">
+    <div class="calendar-nav">
       <div class="date-sector">
         <div v-if="calendarType==='month'">
           <button class="mdi mdi-chevron-left" @click="monthControll('prev')"></button>
@@ -22,40 +22,54 @@
         </div>
       </div>
       <div class="menu-sector">
-        <select name="calandar-menu" id="calandar-menu" v-model="calendarType">
+        <select class="calendar-menu" name="calendar-menu" id="calendar-menu" v-model="calendarType">
           <option value="month" selected>월간</option>
           <option value="week">주간</option>
           <option value="day">일간</option>
         </select>
       </div>
+      <div class="option-sector">
+        <button class="mdi mdi-upload" @click="importData"></button>
+        <button class="mdi mdi-download" @click="isSave=true"></button>
+      </div>
     </div>
-    <div class="calandar-body">
+    <div class="calendar-body">
       <month-calendar v-if="calendarType==='month'" :monthData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
       <week-calendar v-else-if="calendarType==='week'" :weekData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
       <day-calendar v-else-if="calendarType==='day'" :dayData="{ ...initDate, data: initData[this.initDate.month] }" @update:data="updateData" />
     </div>
+    <a ref="exportRef" style="display: none;"></a>
+    <input ref="importRef" type="file" style="display: none;">
+    <alert-modal v-if="isSave"
+      :msg="'정말 캘린터 데이터를 다운로드 받으시겠어요?'"
+      @action:close="isSave=false;"
+      @accept:submit="exportData"
+    />
   </div>
 </template>
 
 <script>
-import MonthCalendar from './MonthCalendar.vue'
-import WeekCalendar from './WeekCalendar.vue'
-import DayCalendar from './DayCalendar.vue'
+import MonthCalendar from './MonthCalendar.vue';
+import WeekCalendar from './WeekCalendar.vue';
+import DayCalendar from './DayCalendar.vue';
+import AlertModal from '@/components/AlertModal.vue';
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
-  name: 'Calandar',
+  name: 'calendar',
   components: {
     MonthCalendar,
     WeekCalendar,
     DayCalendar,
+    AlertModal,
   },
   data() {
     return {
+      isSave: false,
       initDate: null,
       initData: null,
       calendarType: 'month',
-    }
+    };
   },
   created() {
     this.init();
@@ -86,7 +100,7 @@ export default {
         ...nowDateInfor, 
         weekStartDay: weekStartDay,
         weekEndDay: weekEndDay, 
-      }
+      };
 
       this.initDate = this.$Utils.localDB.insertData('currDate', nowDateInfor);
     },
@@ -98,8 +112,8 @@ export default {
         tmpData[targetYear] = {};
         ['01', '02', '03', '04', '05', '06', 
           '07', '08', '09', '10', '11', '12'].map(month => {
-            tmpData[targetYear][month] = {};
-        })
+          tmpData[targetYear][month] = {};
+        });
         tmpData = this.$Utils.localDB.updateData('calendarData', tmpData);
       }
 
@@ -197,25 +211,61 @@ export default {
 
       this.setData();
     },
+    exportData() {
+      const exportData = JSON.stringify({
+        currDate: this.$Utils.localDB.selectData('currDate'),
+        calendarData: this.$Utils.localDB.selectData('calendarData')
+      });
+      const exportDataBlob = new Blob([exportData], { type: 'text/plain' });
+
+      const fileName = `${this.$Utils.convenience.getUUID()}_export.txt`;
+      this.$refs['exportRef'].download = fileName;
+      this.$refs['exportRef'].href = window.URL.createObjectURL(exportDataBlob);
+
+      this.$refs['exportRef'].click();
+      this.isSave = false;
+    },
+    importData() {
+      this.$refs['importRef'].onchange = (evt) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const loadData = JSON.parse(reader.result);
+          this.$Utils.localDB.insertData('currDate', loadData['currDate']);
+          this.$Utils.localDB.insertData('calendarData', loadData['calendarData']);
+          this.init();
+        };
+
+        reader.readAsText(evt.target.files[0]);
+      };
+
+      this.$refs['importRef'].click();
+    },
   },
-}
+};
 </script>
 
-<style lang="scss">
-#calandar {
+<style lang="scss" scoped>
+#calendar {
     width: 100%;
     height: 90%;
     // border: 1px solid lightgrey;
     box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
 }
 
-.calandar-nav {
+.calendar-nav {
   height: 50px;
   border-bottom: 1px solid lightgrey;
-  padding: 0 5% 0 5%;
+  padding: 0 3% 0 3%;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (pointer:coarse) {
+    & .mdi {
+      font-size: 14px;
+    }
+  }
 
   & .date-sector {
     margin-right: auto;
@@ -233,13 +283,18 @@ export default {
     }
 
     @media (pointer:coarse) {
-      font-size: 15px;
+      font-size: 12px;
+
+      & .mdi {
+        font-size: 12px;
+      }
     }
   }
 
   & .menu-sector {
     height: 100%;
     margin-left: auto;
+    margin-right: 5px;
     display: inherit;
     align-items: center;
 
@@ -248,11 +303,32 @@ export default {
       width: 60px;
       text-align: center;
       font-size: 16px;
+
+      @media (pointer:coarse) {
+        width: 50px;
+        font-size: 12px;
+        margin: 0px;
+      }
     }
+  }
+
+  & .option-sector {
+    margin: 0 10px 0 10px;
   }
 }
 
-.calandar-body {
+.calendar-body {
   height: calc(100% - 50px);
+}
+
+.mdi {
+  font-size: 20px;
+  background: none;
+  border: none;
+
+  &:hover {
+    cursor: pointer;
+    background: none;
+  }
 }
 </style>

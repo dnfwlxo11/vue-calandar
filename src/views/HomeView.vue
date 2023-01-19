@@ -5,14 +5,14 @@
 </template>
 
 <script>
-import Calandar from './Calandar'
+import Calandar from './Calandar';
 
 export default {
-    name: 'HomeView',
-    components: {
-        Calandar,
-    },
-}
+  name: 'HomeView',
+  components: {
+    Calandar,
+  },
+};
 </script>
 
 <style>

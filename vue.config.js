@@ -5,4 +5,4 @@ module.exports = defineConfig({
   lintOnSave: false,
   outputDir: path.resolve(__dirname, './docs'),
   publicPath: ''
-})
+});
