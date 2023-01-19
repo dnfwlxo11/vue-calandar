@@ -98,7 +98,6 @@ export default {
           'month': this.monthData.month,
           type,
         }
-        console.log(this.targetDate, 'month')
 
         this.isSubmitModal = true;
       }

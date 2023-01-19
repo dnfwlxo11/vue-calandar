@@ -16,9 +16,9 @@
           <button class="mdi mdi-chevron-right" @click="weekControll('next')"></button>
         </div>
         <div v-else>
-          <button class="mdi mdi-chevron-left" @click="weekControll('prev')"></button>
+          <button class="mdi mdi-chevron-left" @click="dayControll('prev')"></button>
           {{initDate.year}}년 {{initDate.month}}월 {{ initDate.day }}일
-          <button class="mdi mdi-chevron-right" @click="weekControll('next')"></button>
+          <button class="mdi mdi-chevron-right" @click="dayControll('next')"></button>
         </div>
       </div>
       <div class="menu-sector">
@@ -54,7 +54,7 @@ export default {
     return {
       initDate: null,
       initData: null,
-      calendarType: 'day',
+      calendarType: 'month',
     }
   },
   created() {
@@ -160,9 +160,32 @@ export default {
           this.setData();
         } else {
           if (this.initDate.weekEndDay >= this.initDate.lastDay)
-            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.lastDay}`);
+            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekStartDay.toString().padStart(2, '0')}`);
           else
-            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
+            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekStartDay.toString().padStart(2, '0')}`);
+        }
+      }
+    },
+    dayControll(flag) {
+      let nowDay = parseInt(this.initDate.day);
+      let lastDay = this.initDate.lastDay;
+      let weekStartDay = this.initDate.weekStartDay;
+      let weekEndDay = this.initDate.weekEndDay;
+
+      if (flag === 'prev') {
+        this.$set(this.initDate, 'day', (nowDay - 1).toString().padStart(2, '0'));
+        if (nowDay === weekStartDay || nowDay === 1) {
+          this.weekControll('prev');
+        } else {
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.day}`);
+        }
+      } else {
+        this.$set(this.initDate, 'day', (nowDay + 1).toString().padStart(2, '0'));
+        if (nowDay === weekEndDay || nowDay === lastDay) {
+          this.weekControll('next');
+          this.setData();
+        } else { 
+          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.day}`);
         }
       }
     },
@@ -211,7 +234,7 @@ export default {
     }
 
     @media (pointer:coarse) {
-      font-size: 16px;
+      font-size: 15px;
     }
   }
 

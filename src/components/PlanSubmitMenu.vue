@@ -61,7 +61,6 @@ export default {
     },
     created() {
       this.setTargetDate();
-      console.log(this.modalDateInfor, 'modal date')
     },
     mounted() {
       this.modalRef = this.$refs['plan-submit-modal'];
@@ -71,8 +70,7 @@ export default {
     methods: {
       setTargetDate() {
         const { year, month, day } = this.modalDateInfor;
-        console.log(day)
-        console.log(day.toString().padStart(2, '0'))
+        
         this.modalType = this.modalDateInfor.type;
         
         this.modalDateInfor.time === 'all' 

@@ -178,13 +178,20 @@ export default {
         }
 
         & .plans-title {
+            height: 40px;
             margin-bottom: 20px;
         }
 
         & .plans {
+            height: calc(100% - 60px);
             width: 90%;
             margin: 0 auto 0 auto;
             text-align: left;
+            overflow-y: auto;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
             & .plan {
                 width: calc(100% - 20px);
@@ -221,7 +228,7 @@ export default {
 }
 
 .mdi {
-  font-size: 14px;
-  margin: 0 3px 0 3px;
+    font-size: 14px;
+    margin: 0 3px 0 3px;
 }
 </style>

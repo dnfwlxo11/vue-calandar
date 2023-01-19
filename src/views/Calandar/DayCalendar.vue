@@ -50,13 +50,13 @@
                   </div>
                 </div>
               </div>
-              <!-- <div v-else class="day-plans">
-                <div class="day-all" @click.stop="showSubmitModal({ day, time: 'all' })"></div>
+              <div v-else class="day-plans">
+                <div class="day-all" @click.stop="showSubmitModal({ day: dayData.day, time: 'all' })"></div>
                 <div class="day-time" 
                   v-for="(time, timeIdx) of timeKeys" 
                   :key="timeIdx"
-                  @click.stop="showSubmitModal({ day, time })"></div>
-              </div> -->
+                  @click.stop="showSubmitModal({ day: dayData.day, time })"></div>
+              </div>
               <div class="day-plans">
                 <div class="day-all"></div>
                 <div class="day-time" v-for="(time, timeIdx) of timeKeys" :key="timeIdx"></div>
@@ -109,19 +109,14 @@ export default {
       targetDate: null,
     }
   },
-  created() {
-    console.log(this.dayData)
-  },
   methods: {
     showSubmitModal(date, type=false) {
-      console.log(date, 'date');
       this.targetDate = {
         ...date,
         'year': this.dayData.year,
         'month': this.dayData.month,
         type,
       }
-      console.log(this.targetDate, 'targetDate');
 
       this.isSubmitModal = true;
     },
