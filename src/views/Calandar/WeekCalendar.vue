@@ -1,10 +1,14 @@
 <template>
   <div id="week-calandar">
     <div class="week-nav">
-      <div v-for="(day, idx) of ['일', '월', '화', '수', '목', '금', '토']" 
-        :key="idx" class="day-of-week"
-        :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
-        {{day}}
+      <div class="day-of-week"
+        v-for="(day, idx) of ['일', '월', '화', '수', '목', '금', '토']" :key="idx">
+        <div  :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
+          {{day}}
+        </div>
+        <div>
+          {{weekNavDay[idx]}}
+        </div>
       </div>
     </div>
     <div class="week-body">
@@ -62,7 +66,32 @@ export default {
         '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', 
         '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 
         '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', 
-      ]
+      ],
+      weekNavDay: [],
+      weekStartDay: null,
+      weekEndDay: null,
+      monthLastDay: null,
+    }
+  },
+  mounted() {
+    this.init();
+  },
+  methods: {
+    init() {
+      this.weekNavDay = [];
+      this.weekStartDay = this.weekData.weekStartDay;
+      this.weekEndDay = this.weekData.weekEndDay;
+      this.monthLastDay = this.weekData.lastDay;
+
+      for (let i=this.weekStartDay;i<=((this.weekEndDay > this.monthLastDay) ? this.monthLastDay : this.weekEndDay);i++) {
+        if (i < 1) this.weekNavDay.push(null)
+        else this.weekNavDay.push(i);
+      }
+    },
+  },
+  watch: {
+    weekData(value) {
+      this.init();
     }
   }
 }

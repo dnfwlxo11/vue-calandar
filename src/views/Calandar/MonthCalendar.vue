@@ -17,7 +17,7 @@
           {{ day.class ? day.day : null }}
         </div>
         <div v-if="Object.keys(monthData.data).length" class="day-plans">
-          <div v-for="(dayData, dayKey) in monthData.data" :key="dayKey">
+          <div v-for="(dayData, dayKey) in monthData.data" :key="dayKey" style="height: 100%;">
               <div v-if="dayKey === day.day" class="day-plan-wrapper">
                 <div :class="`day-plan day-plan${content.time === 'all' ? '-all' : '-time' }`" 
                   v-for="(content, contentIdx) of dayData.slice(0, 3)" 

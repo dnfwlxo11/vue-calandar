@@ -49,7 +49,7 @@ export default {
     return {
       initDate: null,
       initData: null,
-      calendarType: 'month',
+      calendarType: 'week',
     }
   },
   created() {
@@ -150,12 +150,14 @@ export default {
         this.$set(this.initDate, 'weekEndDay', weekEndDay + 7);
         this.$set(this.initDate, 'nowWeek', nowWeek + 1);
 
-        if (nowWeek === totalWeek - 1) {
+        if (nowWeek === totalWeek) {
           this.monthControll('next');
-          this.setDate(`${this.initDate.year}-${this.initDate.month}-01`);
           this.setData();
         } else {
-          this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
+          if (this.initDate.weekEndDay >= this.initDate.lastDay)
+            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.lastDay}`);
+          else
+            this.setDate(`${this.initDate.year}-${this.initDate.month}-${this.initDate.weekEndDay.toString().padStart(2, '0')}`);
         }
       }
     },
