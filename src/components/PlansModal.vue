@@ -8,12 +8,12 @@
             </div>
             <div class="modal-body">
                 <div class="plans-title">
-                    <div class="week" :class="{}">{{ week[modalPlansInfor[0].date] }}</div>
-                    <div class="day">{{ modalPlansInfor[0].day }}</div>
+                    <div class="week" :class="{}">{{ week[modalPlansInfor.date] }}</div>
+                    <div class="day">{{ modalPlansInfor.day }}</div>
                 </div>
                 <div class="plans">
                     <div :class="`plan plan${ plan.time !== 'all' ? '-time' : '-all' }`" 
-                        v-for="(plan, idx) of modalPlansInfor" 
+                        v-for="(plan, idx) of modalPlansInfor[modalPlansInfor.day]" 
                         :key="idx"
                         @click="updateData(plan)">
                         <span v-if="plan.time !== 'all'" class="mdi mdi-chevron-right"></span>
@@ -42,8 +42,8 @@ export default {
     },
     props: {
         modalPlansInfor: {
-            type: Array,
-            default: () => {return []},
+            type: Object,
+            default: () => {return {}},
         },
     },
     data() {
@@ -56,6 +56,7 @@ export default {
         }
     },
     mounted() {
+        console.log(this.modalPlansInfor)
         this.modalRef = this.$refs['plans-modal'];
         this.modalRef.focus();
         this.modalRef.addEventListener('keyup', this.keyEventListener);

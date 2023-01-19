@@ -47,7 +47,7 @@
       @delete:data="deleteData" />
     <plans-modal 
       v-if="isPlansShowModal"
-      :modalPlansInfor="monthData.data"
+      :modalPlansInfor="{ ...monthData.data, ...targetDay }"
       @action:close="isPlansShowModal=false"
       @update:submit="updateData"
       @delete:data="deleteData" />
@@ -135,7 +135,7 @@ export default {
       }
     },
     showMoreData(target) {
-      this.targetDay = `${target.month}-${target.day}`;
+      this.targetDay = { day: target.day, date: target.date };
       this.isPlansShowModal = true;
     },
     saveData(value) {

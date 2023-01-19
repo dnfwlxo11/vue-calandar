@@ -101,6 +101,7 @@ export default {
 
       this.initData = tmpData[targetYear];
     },
+    // calendarType이 month일때 컨트롤
     monthControll(flag) {
       let year = this.initDate.year;
       let month = parseInt(this.initDate.month);
@@ -125,6 +126,7 @@ export default {
 
       this.setData();
     },
+    // calendarType이 week일때 컨트롤
     weekControll(flag) {
       let nowWeek = this.initDate.nowWeek;
       let totalWeek = this.initDate.totalWeek;
