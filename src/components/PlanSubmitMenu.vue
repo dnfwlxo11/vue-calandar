@@ -63,6 +63,7 @@ export default {
       this.setTargetDate();
     },
     mounted() {
+      console.log(this.modalDateInfor, 'this.modalDateInfor');
       this.modalRef = this.$refs['plan-submit-modal'];
       this.modalRef.focus();
       this.modalRef.addEventListener('keyup', this.keyEventListener);
@@ -72,13 +73,13 @@ export default {
         const { year, month, day } = this.modalDateInfor;
 
         this.modalType = this.modalDateInfor.type;
+        
+        this.modalDateInfor.time === 'all' 
+          ? this.isFullDay = true 
+          : this.isFullDay = false;
 
         // true는 수정 false는 생성
         if (this.modalType) {
-          this.modalDateInfor.time !== 'all' ? 
-            this.isFullDay = false 
-            : this.isFullDay = true;
-
           this.submitData = {
             ...this.modalDateInfor,
             'updated_ts': this.$Utils.dateUtils.getNow(),
@@ -86,7 +87,7 @@ export default {
         } else {
           this.submitData = {
             ...this.submitData,
-            'time': this.isFullDay ? 'all' : '08:00',
+            'time': this.modalDateInfor.time,
             'fulldate': `${year}-${month}-${day.toString().padStart(2, '0')}`,
             'created_ts': this.$Utils.dateUtils.getNow(),
             'updated_ts': this.$Utils.dateUtils.getNow(),
@@ -104,7 +105,7 @@ export default {
       },
       setFullDay() {
         this.isFullDay = !this.isFullDay;
-
+        console.log(this.isFullDay)
         this.isFullDay
           ? this.$set(this.submitData, 'time', 'all')
           : this.$set(this.submitData, 'time', this.modalDateInfor.time === 'all' ? '08:00' : this.modalDateInfor.time);

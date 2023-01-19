@@ -204,6 +204,10 @@ export default {
         background-color: lightgrey;
       }
     }
+
+    @media (pointer:coarse) {
+      font-size: 16px;
+    }
   }
 
   & .menu-sector {

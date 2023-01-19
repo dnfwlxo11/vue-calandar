@@ -16,7 +16,8 @@
                         v-for="(plan, idx) of modalPlansInfor[modalPlansInfor.day]" 
                         :key="idx"
                         @click="updateData(plan)">
-                        <span v-if="plan.time !== 'all'" class="mdi mdi-chevron-right"></span>
+                        <span v-if="plan.time !== 'all'" class="mdi mdi-timer-outline"></span>
+                        <span v-else class="mdi mdi-check-circle-outline"></span>
                         <span class="plan-title">{{ plan.title }}</span> 
                         - <span class="plan-content">{{ plan.content }}</span>
                     </div>
@@ -28,7 +29,8 @@
             :modalDateInfor="targetDate"
             @action:close="isSubmitModal=false;modalRef.focus()"
             @update:submit="submit"
-            @delete:data="deleteData" />
+            @delete:data="deleteData" 
+        />
     </div>
 </template>
 
@@ -56,7 +58,6 @@ export default {
         }
     },
     mounted() {
-        console.log(this.modalPlansInfor)
         this.modalRef = this.$refs['plans-modal'];
         this.modalRef.focus();
         this.modalRef.addEventListener('keyup', this.keyEventListener);
@@ -217,5 +218,10 @@ export default {
             }
         }
     }
+}
+
+.mdi {
+  font-size: 14px;
+  margin: 0 3px 0 3px;
 }
 </style>

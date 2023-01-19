@@ -17,18 +17,18 @@
           {{ day.class ? day.day : null }}
         </div>
         <div v-if="Object.keys(monthData.data).length" class="day-plans">
-          <div v-for="(dayData, dayKey) in monthData.data" :key="dayKey" style="height: 100%;">
+          <div v-for="(dayData, dayKey) in monthData.data" :key="dayKey" :style="{  'height': dayKey !== day.day ? '0%' : '100%'}">
               <div v-if="dayKey === day.day" class="day-plan-wrapper">
                 <div :class="`day-plan day-plan${content.time === 'all' ? '-all' : '-time' }`" 
                   v-for="(content, contentIdx) of dayData.slice(0, 3)" 
                   :key="contentIdx"
                   @click.stop="showSubmitModal({ ...day, ...content }, true)">
-                  <span v-if="content.time !== 'all'" class="mdi mdi-chevron-right"></span>
+                  <span v-if="content.time !== 'all'" class="mdi mdi-timer-outline"></span>
+                  <span v-else class="mdi mdi-check-circle-outline"></span>
                   <span class="day-plan-title">{{ content.title }}</span> 
                   - <span class="day-plan-content">{{ content.content }}</span>
                 </div>
               </div>
-              <!-- {{dayData}} -->
               <div class="plan-more" v-if="dayData.length > 3 && dayKey === day.day">
                 <button class="btn" @click.stop="showMoreData(day)">
                   {{dayData.length - 3}}개 더보기
@@ -44,13 +44,15 @@
       @action:close="isSubmitModal=false" 
       @create:submit="saveData"
       @update:submit="updateData"
-      @delete:data="deleteData" />
+      @delete:data="deleteData" 
+    />
     <plans-modal 
       v-if="isPlansShowModal"
       :modalPlansInfor="{ ...monthData.data, ...targetDay }"
       @action:close="isPlansShowModal=false"
       @update:submit="updateData"
-      @delete:data="deleteData" />
+      @delete:data="deleteData" 
+    />
   </div>
 </template>
 
@@ -116,6 +118,7 @@ export default {
           'year': null,
           'month': null,
           'day': null,
+          'time': 'all',
           'class': true,
           'date': null,
         };
@@ -139,49 +142,49 @@ export default {
       this.isPlansShowModal = true;
     },
     saveData(value) {
-      console.log(this.monthData.data)
       const [ year, month, day ] = value.fulldate.split('-');
       
       const dayData = {};
-      Object.values(this.monthData.data).length
+
+      // eslint-disable-next-line no-prototype-builtins
+      this.monthData.data.hasOwnProperty(day)
         ? dayData[day] = [ ...this.monthData.data[day], value]
         : dayData[day] = [value]
 
       let submitData = {};
 
       // eslint-disable-next-line no-prototype-builtins
-      this.monthData.data.hasOwnProperty(day) ?
-        submitData[month] = { ...this.monthData.data, ...dayData }
-        : submitData[month] = dayData;
-        
+      submitData[month] = { ...this.monthData.data, ...dayData }
+
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
     },
     updateData(value) {
       const [ year, month, day ] = value.fulldate.split('-');
-      const baseData = Object.values(this.monthData.data[day]).filter((dayData) => dayData.uid !== value.uid);
-      console.log(value, baseData)
+      const baseData = this.monthData.data[day].filter((dayData) => dayData.uid !== value.uid);
 
       const dayData = {}
       dayData[day] = [ ...baseData, value]
 
       let submitData = {};
-      submitData[month] = dayData
-      console.log(submitData)
+      submitData[month] = { ...this.monthData.data, ...dayData };
 
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
     },
     deleteData(value) {
       const [ year, month, day ] = value.fulldate.split('-');
-      const baseData = this.monthData.data[month][day].filter((item) => item.uid !== value.uid)
+      const baseData = this.monthData.data[day].filter((dayData) => dayData.uid !== value.uid)
+
+      const dayData = {};
+      dayData[day] = baseData;
 
       const submitData = {};
-      submitData[month] = baseData
+      submitData[month] = { ...this.monthData.data, ...dayData };
 
       this.$emit('update:data', submitData);
       this.isSubmitModal = false;
-    }
+    },
   },
   watch: {
     monthData() {
@@ -312,5 +315,10 @@ export default {
   &:hover {
     cursor: pointer;
   }
+}
+
+.mdi {
+  font-size: 14px;
+  margin: 0 3px 0 3px;
 }
 </style>

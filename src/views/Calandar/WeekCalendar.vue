@@ -1,13 +1,14 @@
 <template>
   <div id="week-calandar">
     <div class="week-nav">
-      <div class="day-of-week"
-        v-for="(day, idx) of ['일', '월', '화', '수', '목', '금', '토']" :key="idx">
-        <div  :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
-          {{day}}
-        </div>
-        <div>
-          {{weekNavDay[idx]}}
+      <div class="day-of-week" v-for="(day, idx) of weekNavDay" :key="idx">
+        <div v-if="day <= weekData.lastDay">
+          <div :class="{ 'sunday': idx % 7 === 0, 'saturday': idx % 7 === 6 }">
+            {{ $Utils.dateUtils.getKoreanDate(idx) }}
+          </div>
+          <div>
+            {{day}}
+          </div>
         </div>
       </div>
     </div>
@@ -24,29 +25,68 @@
           </div>
         </div>
         <div class="week-body-content">
-          <div class="week-all">
-            123
-          </div>
-          <div class="week-times">
-            <div class="week-time" v-for="(time, idx) of timeKeys" :key="idx">
-              {{idx}}. {{time}}
+          <div class="week-contents" v-for="(day, dayIdx) of weekNavDay" :key="dayIdx">
+            <div class="week-times">
+              <div v-if="weekData.data.hasOwnProperty(parseInt(day).toString().padStart(2, '0'))">
+                <div class="week-all" @click.stop="showSubmitModal({ day, time: 'all' })">
+                  <div v-for="(dayData, dayDataIdx) of weekData.data[day.toString().padStart(2, '0')]" 
+                    :key="dayDataIdx">
+                    <div v-if="dayData.time === 'all'" 
+                      class="day-plan day-plan-all"
+                      @click.stop="showSubmitModal(dayData, true)">
+                      <span class="mdi mdi-check-circle-outline"></span>
+                      <span class="day-plan-title">{{ dayData.title }}</span> 
+                      - <span class="day-plan-content">{{ dayData.content }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="week-time" 
+                  v-for="(time, timeIdx) of timeKeys" 
+                  :key="timeIdx"
+                  @click.stop="showSubmitModal({ day, time })">
+                  <div v-for="(dayData, dayDataIdx) of weekData.data[day.toString().padStart(2, '0')]" 
+                    :key="dayDataIdx">
+                    <div v-if="dayData.time.split(':')[0] === time.split(':')[0]" 
+                      class="day-plan day-plan-time"
+                      @click.stop="showSubmitModal(dayData, true)">
+                      <span class="mdi mdi-timer-outline"></span>
+                      <span class="day-plan-title">{{ dayData.title }}</span> 
+                      - <span class="day-plan-content">{{ dayData.content }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="day-plans">
+                <div class="week-all" @click.stop="showSubmitModal({ day, time: 'all' })"></div>
+                <div class="week-time" 
+                  v-for="(time, timeIdx) of timeKeys" 
+                  :key="timeIdx"
+                  @click.stop="showSubmitModal({ day, time })"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <plan-submit-menu 
+      v-if="isSubmitModal" 
+      :modalDateInfor="targetDate" 
+      @action:close="isSubmitModal=false" 
+      @create:submit="saveData"
+      @update:submit="updateData"
+      @delete:data="deleteData" 
+    />
   </div>
 </template>
 
 <script>
 import PlanSubmitMenu from '@/components/PlanSubmitMenu.vue'
-import PlansModal from '@/components/PlansModal.vue';
 
 export default {
   name: 'WeekCalandar',
   components: {
     PlanSubmitMenu,
-    PlansModal,
   },
   props: {
     weekData: {
@@ -57,7 +97,7 @@ export default {
   data() {
     return {
       times: [
-        '오전 1시', '오전 2시', '오전 3시', '오전 4시', '오전 5시', '오전 6시',
+        '오전 0시', '오전 1시', '오전 2시', '오전 3시', '오전 4시', '오전 5시', '오전 6시',
         '오전 7시', '오전 8시', '오전 9시', '오전 10시', '오전 11시', '오후 12시',
         '오후 1시', '오후 2시', '오후 3시', '오후 4시', '오후 5시', '오후 6시',
         '오후 7시', '오후 8시', '오후 9시', '오후 10시', '오후 11시',
@@ -67,6 +107,10 @@ export default {
         '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', 
         '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', 
       ],
+      isHover: false,
+      isSubmitModal: false,
+      targetday: null,
+      targetDate: null,
       weekNavDay: [],
       weekStartDay: null,
       weekEndDay: null,
@@ -83,14 +127,68 @@ export default {
       this.weekEndDay = this.weekData.weekEndDay;
       this.monthLastDay = this.weekData.lastDay;
 
-      for (let i=this.weekStartDay;i<=((this.weekEndDay > this.monthLastDay) ? this.monthLastDay : this.weekEndDay);i++) {
+      for (let i=this.weekStartDay;i<=this.weekEndDay;i++) {
         if (i < 1) this.weekNavDay.push(null)
         else this.weekNavDay.push(i);
       }
     },
+    showSubmitModal(date, type=false) {
+      this.targetDate = {
+        ...date,
+        'year': this.weekData.year,
+        'month': this.weekData.month,
+        type,
+      }
+
+      this.isSubmitModal = true;
+    },
+    saveData(value) {
+      const [ year, month, day ] = value.fulldate.split('-');
+      
+      const dayData = {};
+
+      // eslint-disable-next-line no-prototype-builtins
+      this.monthData.data.hasOwnProperty(day)
+        ? dayData[day] = [ ...this.weekData.data[day], value]
+        : dayData[day] = [value]
+
+      let submitData = {};
+
+      // eslint-disable-next-line no-prototype-builtins
+      submitData[month] = { ...this.weekData.data, ...dayData }
+      
+      this.$emit('update:data', submitData);
+      this.isSubmitModal = false;
+    },
+    updateData(value) {
+      const [ year, month, day ] = value.fulldate.split('-');
+      const baseData = this.weekData.data[day].filter((dayData) => dayData.uid !== value.uid);
+
+      const dayData = {}
+      dayData[day] = [ ...baseData, value]
+
+      let submitData = {};
+      submitData[month] = { ...this.weekData.data, ...dayData };
+
+      this.$emit('update:data', submitData);
+      this.isSubmitModal = false;
+    },
+    deleteData(value) {
+      const [ year, month, day ] = value.fulldate.split('-');
+      const baseData = this.weekData.data[day].filter((dayData) => dayData.uid !== value.uid)
+
+      const dayData = {};
+      dayData[day] = baseData;
+
+      const submitData = {};
+      submitData[month] = { ...this.weekData.data, ...dayData };
+
+      this.$emit('update:data', submitData);
+      this.isSubmitModal = false;
+    }
   },
   watch: {
-    weekData(value) {
+    weekData() {
       this.init();
     }
   }
@@ -105,13 +203,13 @@ export default {
 .week-nav {
   height: 60px;
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
   font-weight: 600;
   border-bottom: 1px solid lightgrey;
   padding-left: 70px;
 
   & .day-of-week {
-    width: 100%;
+    width: calc(100% / 7);
   }
 }
 
@@ -145,7 +243,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100px;
+        height: 140px;
         width: 70px;
         background: white;
         border-bottom: 1px solid lightgrey;
@@ -153,7 +251,6 @@ export default {
 
       & .vertical-times {
         & .vertical-time {
-          padding-top: 10px;
           height: 140px;
           width: 100%;
         }
@@ -163,20 +260,68 @@ export default {
 
     & .week-body-content {
       width: calc(100% - 70px);
+      display: flex;
 
-      & .week-all {
-        top: 0;
-        position: sticky;
-        width: calc(100%);
-        height: 100px;
-        background: white;
-        border-bottom: 1px solid lightgrey;
-      }
+      & .week-contents {
+        width: calc(100% / 7);
 
-      & .week-times {
-        & .week-time {
-          width: 100%;
-          height: 140px;
+        & .week-times {
+          border-right: 1px solid lightgrey;
+
+          & .day-plan {
+            text-align: left;
+            // 양쪽 3px 씩
+            width: calc(100% - 6px);
+            padding: 1px 3px 1px 3px;
+            margin: 4px 0 4px 0;
+            
+            font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow-x: hidden;
+            overflow-y: auto;
+            border-radius: 0.25rem;
+
+            &-time {
+              background: #D2FDBB;
+            }
+
+            &-all {
+              background: #EEDDFF;
+            }
+          }
+
+          & .week-all {
+            top: 0;
+            position: sticky;
+            width: 100%;
+            height: 100px;
+            padding-bottom: 40px;
+            background: white;
+            border-bottom: 1px solid lightgrey;
+            overflow-y: auto;
+
+            &::-webkit-scrollbar {
+              display: none;
+            }
+          }
+
+          & .week-time {
+            width: 100%;
+            height: 100px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid lightgrey;
+            overflow: auto;
+
+            &::-webkit-scrollbar {
+              display: none;
+            }
+          }
+
+          & .week-all:hover, .week-time:hover {
+            cursor: pointer;
+            background: #F1F3F5;
+          }
         }
       }
     }
@@ -189,5 +334,24 @@ export default {
 
 .sunday {
   color: red;
+}
+
+.btn {
+  height: 70%;
+  background: #413BF7;
+  color: white;
+  min-width: 50px;
+  min-height: 20px;
+  border-radius: 0.25rem;
+  border: none;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.mdi {
+  font-size: 14px;
+  margin: 0 3px 0 3px;
 }
 </style>
