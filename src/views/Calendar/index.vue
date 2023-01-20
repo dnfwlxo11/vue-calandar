@@ -247,10 +247,10 @@ export default {
 
 <style lang="scss" scoped>
 #calendar {
-    width: 100%;
-    height: 90%;
-    // border: 1px solid lightgrey;
-    box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px;
+  padding: 20px;
+  width: calc(100% - 42px);
+  height: calc(100% - 42px);
+  border: 1px solid lightgrey;
 }
 
 .calendar-nav {

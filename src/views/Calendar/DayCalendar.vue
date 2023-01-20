@@ -170,12 +170,14 @@ export default {
 <style lang="scss" scoped>
 #day-calandar {
   height: 100%;
+  border-left: 1px solid lightgrey;
 }
 
 .day-nav {
   height: 60px;
   display: flex;
   font-weight: 600;
+  border-right: 1px solid lightgrey;
   border-bottom: 1px solid lightgrey;
   padding-left: 70px;
   align-items: center;

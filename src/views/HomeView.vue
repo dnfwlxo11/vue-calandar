@@ -1,16 +1,23 @@
 <template>
     <div id='home' class="container">
-        <Calandar />
+      <div class="custom">
+        <Calendar />
+      </div>
+      <!-- <div class="custom">
+        <DaeinCalendar />
+      </div> -->
     </div>
 </template>
 
 <script>
-import Calandar from './Calandar';
+import DaeinCalendar from 'daein-calendar';
+import Calendar from './Calendar';
 
 export default {
   name: 'HomeView',
   components: {
-    Calandar,
+    Calendar,
+    DaeinCalendar,
   },
 };
 </script>
@@ -24,5 +31,10 @@ export default {
     margin: 0 auto;
     width: 80%;
     height: 100%;
+}
+
+.custom {
+  width: 1000px;
+  height: 800px;
 }
 </style>

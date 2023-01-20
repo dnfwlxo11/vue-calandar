@@ -1,14 +1,18 @@
 {
-  "name": "vue-calandar",
+  "name": "daein-calendar",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "main": "./dist/daein-calendar.common.js",
+  "browser": "./dist/daein-calendar.common.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "deploy_build": "vue-cli-service build --target lib --name daein-calendar ./src/index.js",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.8.3",
+    "daein-calendar": "^0.1.0",
     "vue": "^2.6.14",
     "vue-router": "^3.5.1"
   },
@@ -39,8 +43,14 @@
     },
     "rules": {
       "no-unused-vars": "off",
-      "semi": ["error", "always"],
-      "indent": ["error", 2]
+      "semi": [
+        "error",
+        "always"
+      ],
+      "indent": [
+        "error",
+        2
+      ]
     }
   },
   "browserslist": [

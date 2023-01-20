@@ -196,6 +196,7 @@ export default {
 <style lang="scss" scoped>
 #month-calandar {
   height: 100%;
+  border-left: 1px solid lightgrey;
 }
 
 .month-nav {

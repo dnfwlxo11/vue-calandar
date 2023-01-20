@@ -193,12 +193,14 @@ export default {
 <style lang="scss" scoped>
 #week-calandar {
   height: 100%;
+  border-left: 1px solid lightgrey;
 }
 
 .week-nav {
   height: 60px;
   display: flex;
   font-weight: 600;
+  border-right: 1px solid lightgrey;
   border-bottom: 1px solid lightgrey;
   padding-left: 70px;
 
@@ -223,7 +225,7 @@ export default {
     width: 100%;
 
     & .week-body-vertical {
-      width: 70px;
+      width: 69px;
       border-right: 1px solid lightgrey;
       text-align: center;
       font-size: 14px;
@@ -237,7 +239,7 @@ export default {
         justify-content: center;
         align-items: center;
         height: 140px;
-        width: 70px;
+        width: 69px;
         background: white;
         border-bottom: 1px solid lightgrey;
       }
