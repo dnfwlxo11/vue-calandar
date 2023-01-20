@@ -1,6 +1,6 @@
 {
   "name": "daein-calendar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "main": "./dist/daein-calendar.common.js",
   "browser": "./dist/daein-calendar.common.js",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "daein-calendar": "^0.1.0",
+    "daein-calendar": "^0.1.1",
     "vue": "^2.6.14",
     "vue-router": "^3.5.1"
   },

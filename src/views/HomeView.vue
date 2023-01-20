@@ -1,11 +1,11 @@
 <template>
     <div id='home' class="container">
-      <div class="custom">
-        <Calendar />
-      </div>
       <!-- <div class="custom">
-        <DaeinCalendar />
+        <Calendar />
       </div> -->
+      <div class="custom">
+        <DaeinCalendar />
+      </div>
     </div>
 </template>
 
@@ -29,12 +29,12 @@ export default {
     justify-content: center;
     text-align: center;
     margin: 0 auto;
-    width: 80%;
+    width: 100%;
     height: 100%;
 }
 
 .custom {
-  width: 1000px;
-  height: 800px;
+  width: 95%;
+  height: 95%;
 }
 </style>
